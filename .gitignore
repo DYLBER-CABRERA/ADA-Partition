@@ -56,3 +56,18 @@ build/
 
 .log
 .claude
+
+#salida
+salida.txt
+
+#datos prueba
+docs/DatosPruebas2026_1.xlsx
+
+# Archivos TPM pesados
+**/N25A.csv
+**/N22A.csv
+**/N20A.csv
+
+# Logs
+*.log
+.logs/

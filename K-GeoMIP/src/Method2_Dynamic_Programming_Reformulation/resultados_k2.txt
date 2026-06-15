@@ -1,0 +1,559 @@
+
+============================================================
+Prueba 1/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             ACEGI -> 1010101010
+Mecanismo:      ABCDEFGHIJ -> 1111111111
+k = 2
+==================================================
+CRITICAL (21:00:37): Original creado.
+CRITICAL (21:00:37): Original:
+CRITICAL (21:00:37): Candidato creado.
+CRITICAL (21:00:37): Subsistema creado.
+CRITICAL (21:00:37): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 1.0000 0. 0. 0. 1.0000 ]
+Distribucion marginal de la Partición:
+[ 1.0000 0. 0. 0. 0.5273 ]
+
+Mejor Bi-Partición:
+|       A,C,E,G       || I |
+| a,b,c,d,e,f,g,h,i,j || ∅ |
+Perdida mínima ( φ ) = 0.4727
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.1217
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 2/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             ACEGI -> 1010101010
+Mecanismo:       ABCDEFGHI -> 1111111110
+k = 2
+==================================================
+CRITICAL (21:00:37): Original creado.
+CRITICAL (21:00:37): Original:
+CRITICAL (21:00:37): Candidato creado.
+CRITICAL (21:00:37): Subsistema creado.
+CRITICAL (21:00:37): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 0.5000 0.5000 0. 0.5000 0.5000 ]
+Distribucion marginal de la Partición:
+[ 0.5000 0.5000 0. 0.4951 0.5000 ]
+
+Mejor Bi-Partición:
+|      A,C,E,I      || G |
+| a,b,c,d,e,f,g,h,i || ∅ |
+Perdida mínima ( φ ) = 0.0049
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0791
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 3/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             ACEGI -> 1010101010
+Mecanismo:       BCDEFGHIJ -> 0111111111
+k = 2
+==================================================
+CRITICAL (21:00:37): Original creado.
+CRITICAL (21:00:37): Original:
+CRITICAL (21:00:37): Candidato creado.
+CRITICAL (21:00:37): Subsistema creado.
+CRITICAL (21:00:37): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 1.0000 0. 0.5000 0.5000 1.0000 ]
+Distribucion marginal de la Partición:
+[ 1.0000 0. 0.5000 0.4951 1.0000 ]
+
+Mejor Bi-Partición:
+|      A,C,E,I      || G |
+| b,c,d,e,f,g,h,i,j || ∅ |
+Perdida mínima ( φ ) = 0.0049
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0627
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 4/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             ACEGI -> 1010101010
+Mecanismo:        BCDEFGHI -> 0111111110
+k = 2
+==================================================
+CRITICAL (21:00:37): Original creado.
+CRITICAL (21:00:37): Original:
+CRITICAL (21:00:37): Candidato creado.
+CRITICAL (21:00:37): Subsistema creado.
+CRITICAL (21:00:37): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 0.5000 0.2500 0.2500 0.7500 0.5000 ]
+Distribucion marginal de la Partición:
+[ 0.5195 0.2500 0.2500 0.7500 0.5000 ]
+
+Mejor Bi-Partición:
+|     C,E,G,I     || A |
+| b,c,d,e,f,g,h,i || ∅ |
+Perdida mínima ( φ ) = 0.0195
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0360
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 5/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             ACEGI -> 1010101010
+Mecanismo:         ABDEGHJ -> 1101101101
+k = 2
+==================================================
+CRITICAL (21:00:37): Original creado.
+CRITICAL (21:00:37): Original:
+CRITICAL (21:00:37): Candidato creado.
+CRITICAL (21:00:37): Subsistema creado.
+CRITICAL (21:00:37): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 0.6250 0.5000 0.6250 0.2500 0.5000 ]
+Distribucion marginal de la Partición:
+[ 0.6250 0.4805 0.6250 0.2500 0.5000 ]
+
+Mejor Bi-Partición:
+|    A,E,G,I    || C |
+| a,b,d,e,g,h,j || ∅ |
+Perdida mínima ( φ ) = 0.0195
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0263
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 6/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             ACEGI -> 1010101010
+Mecanismo:           ACEGI -> 1010101010
+k = 2
+==================================================
+CRITICAL (21:00:37): Original creado.
+CRITICAL (21:00:37): Original:
+CRITICAL (21:00:37): Candidato creado.
+CRITICAL (21:00:37): Subsistema creado.
+CRITICAL (21:00:37): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 0.4688 0.5625 0.5312 0.3438 0.3750 ]
+Distribucion marginal de la Partición:
+[ 0.4688 0.5625 0.5156 0.3438 0.3750 ]
+
+Mejor Bi-Partición:
+|  A,C,G,I  || E |
+| a,c,e,g,i || ∅ |
+Perdida mínima ( φ ) = 0.0156
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0090
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 7/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             ACEGI -> 1010101010
+Mecanismo:           BDFHJ -> 0101010101
+k = 2
+==================================================
+CRITICAL (21:00:37): Original creado.
+CRITICAL (21:00:37): Original:
+CRITICAL (21:00:37): Candidato creado.
+CRITICAL (21:00:37): Subsistema creado.
+CRITICAL (21:00:37): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 0.5000 0.4688 0.7188 0.4688 0.5312 ]
+Distribucion marginal de la Partición:
+[ 0.5000 0.4688 0.7188 0.4688 0.5273 ]
+
+Mejor Bi-Partición:
+|  A,C,E,G  || I |
+| b,d,f,h,j || ∅ |
+Perdida mínima ( φ ) = 0.0039
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0095
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 8/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             BDFHJ -> 0101010101
+Mecanismo:      ABCDEFGHIJ -> 1111111111
+k = 2
+==================================================
+Error al inicializar el motor de voz: [WinError -2147221008] No se ha llamado a CoInitialize
+Error al inicializar el motor de voz: [WinError -2147221008] No se ha llamado a CoInitialize
+Error al inicializar el motor de voz: [WinError -2147221008] No se ha llamado a CoInitialize
+Error al inicializar el motor de voz: [WinError -2147221008] No se ha llamado a CoInitialize
+Error al inicializar el motor de voz: [WinError -2147221008] No se ha llamado a CoInitialize
+Error al inicializar el motor de voz: [WinError -2147221008] No se ha llamado a CoInitialize
+CRITICAL (21:00:37): Original creado.
+CRITICAL (21:00:37): Original:
+CRITICAL (21:00:37): Candidato creado.
+CRITICAL (21:00:37): Subsistema creado.
+CRITICAL (21:00:37): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 1.0000 0. 0. Error al inicializar el motor de voz: [WinError -2147221008] No se ha llamado a CoInitialize
+1.0000 1.0000 ]
+Distribucion marginal de la Partición:
+[ 1.0000 0. 0. 0.5156 1.0000 ]
+
+Mejor Bi-Partición:
+|      B,D,F,J      || H |
+| a,b,c,d,e,f,g,h,j || i |
+Perdida mínima ( φ ) = 0.4844
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.1367
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 9/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             BDFHJ -> 0101010101
+Mecanismo:       ABCDEFGHI -> 1111111110
+k = 2
+==================================================
+CRITICAL (21:00:38): Original creado.
+CRITICAL (21:00:38): Original:
+CRITICAL (21:00:38): Candidato creado.
+CRITICAL (21:00:38): Subsistema creado.
+CRITICAL (21:00:38): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 1.0000 0. 0. 1.0000 0.5000 ]
+Distribucion marginal de la Partición:
+[ 1.0000 0. 0. 1.0000 0.5059 ]
+
+Mejor Bi-Partición:
+|      B,D,F,H      || J |
+| a,b,c,d,e,f,g,h,i || ∅ |
+Perdida mínima ( φ ) = 0.0059
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0647
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 10/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             BDFHJ -> 0101010101
+Mecanismo:       BCDEFGHIJ -> 0111111111
+k = 2
+==================================================
+CRITICAL (21:00:38): Original creado.
+CRITICAL (21:00:38): Original:
+CRITICAL (21:00:38): Candidato creado.
+CRITICAL (21:00:38): Subsistema creado.
+CRITICAL (21:00:38): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 0.5000 0. 0.5000 0.5000 1.0000 ]
+Distribucion marginal de la Partición:
+[ 0.5000 0. 0.5068 0.5000 1.0000 ]
+
+Mejor Bi-Partición:
+|      B,D,H,J      || F |
+| b,c,d,e,f,g,h,i,j || ∅ |
+Perdida mínima ( φ ) = 0.0068
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0609
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 11/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             BDFHJ -> 0101010101
+Mecanismo:        BCDEFGHI -> 0111111110
+k = 2
+==================================================
+Error al inicializar el motor de voz: run loop already started
+Error al inicializar el motor de voz: run loop already started
+CRITICAL (21:00:38): Original creado.
+CRITICAL (21:00:38): Original:
+CRITICAL (21:00:38): Candidato creado.
+CRITICAL (21:00:38): Subsistema creado.
+CRITICAL (21:00:38): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 0.5000 0.2500 0.2500 0.5000 0.7500 ]
+Distribucion marginal de la Partición:
+[ 0.4883 0.2500 0.2500 0.5000 0.7500 ]
+
+Mejor Bi-Partición:
+|     D,F,H,J     || B |
+| b,c,d,e,f,g,h,i || ∅ |
+Perdida mínima ( φ ) = 0.0117
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0407
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 12/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             BDFHJ -> 0101010101
+Mecanismo:         ABDEGHJ -> 1101101101
+k = 2
+==================================================
+Error al inicializar el motor de voz: run loop already started
+CRITICAL (21:00:38): Original creado.
+CRITICAL (21:00:38): Original:
+CRITICAL (21:00:38): Candidato creado.
+CRITICAL (21:00:38): Subsistema creado.
+CRITICAL (21:00:38): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 0.3750 0.3750 0.3750 0.3750 0.5000 ]
+Distribucion marginal de la Partición:
+[ 0.3750 0.3750 0.3750 0.3750 0.5059 ]
+
+Mejor Bi-Partición:
+|    B,D,F,H    || J |
+| a,b,d,e,g,h,j || ∅ |
+Perdida mínima ( φ ) = 0.0059
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0198
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 13/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             BDFHJ -> 0101010101
+Mecanismo:           ACEGI -> 1010101010
+k = 2
+==================================================
+Error al inicializar el motor de voz: run loop already started
+CRITICAL (21:00:38): Original creado.
+CRITICAL (21:00:38): Original:
+CRITICAL (21:00:38): Candidato creado.
+CRITICAL (21:00:38): Subsistema creado.
+CRITICAL (21:00:38): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 0.5625 0.4375 0.5312 0.5625 0.4688 ]
+Distribucion marginal de la Partición:
+[ 0.5625 0.4375 0.5068 0.5625 0.4688 ]
+
+Mejor Bi-Partición:
+|  B,D,H,J  || F |
+| a,c,e,g,i || ∅ |
+Perdida mínima ( φ ) = 0.0244
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0175
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+============================================================
+Prueba 14/14
+
+==================================================
+Sistema:        ABCDEFGHIJ
+Estado inicial: 1000000000
+Alcance:             BDFHJ -> 0101010101
+Mecanismo:           BDFHJ -> 0101010101
+k = 2
+==================================================
+Error al inicializar el motor de voz: run loop already started
+CRITICAL (21:00:38): Original creado.
+CRITICAL (21:00:38): Original:
+CRITICAL (21:00:38): Candidato creado.
+CRITICAL (21:00:38): Subsistema creado.
+CRITICAL (21:00:38): empieza.
+══════════════════════════════════════════════════
+
+Geometric fue la estrategia de solucion.
+
+Distancia métrica utilizada:
+emd-effect
+Notación utilizada en indexación:
+little-endian
+
+Distribucion marginal del Subsistema:
+[ 0.4062 0.4688 0.5312 0.5312 0.5312 ]
+Distribucion marginal de la Partición:
+[ 0.4062 0.4688 0.5068 0.5312 0.5312 ]
+
+Mejor Bi-Partición:
+|  B,D,H,J  || F |
+| b,d,f,h,j || ∅ |
+Perdida mínima ( φ ) = 0.0244
+
+Tiempos de ejecución:
+Horas: 0.00 = Minutos: 0.0 = Segundos: 0.0131
+
+≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+Error al inicializar el motor de voz: run loop already started

@@ -118,14 +118,19 @@ def resolver_tpm_path(estado_inicio: str) -> Path:
     )
     for candidate in candidates:
         if candidate.exists():
+            print(f"[TPM] Usando: {candidate}")
             return candidate
     raise FileNotFoundError(
         f"No se encontró la TPM '{sample_name}'. Busqué en: {', '.join(str(c) for c in candidates)}"
     )
 
 
-def inferir_estado_inicial() -> str:
-    """Infer an initial state from available datasets (prefers largest NxA.csv)."""
+def inferir_estado_inicial(n: int | None = None) -> str:
+    """Infer an initial state from available datasets.
+
+    If n is given, uses the dataset for exactly n nodes (e.g. n=10 → N10A.csv).
+    If n is None, falls back to the largest available dataset.
+    """
     sample_dirs = (
         METHOD2_ROOT / "src" / ".samples",
         METHOD2_ROOT / ".samples",
@@ -145,7 +150,16 @@ def inferir_estado_inicial() -> str:
     if not available_sizes:
         raise FileNotFoundError("No hay archivos de muestras TPM disponibles en data/samples ni .samples.")
 
-    n_bits = max(available_sizes)
+    if n is not None:
+        if n not in available_sizes:
+            raise FileNotFoundError(
+                f"No hay archivo de muestra para N={n}. "
+                f"Disponibles: {sorted(set(available_sizes))}"
+            )
+        n_bits = n
+    else:
+        n_bits = max(available_sizes)
+
     return "1" + ("0" * (n_bits - 1))
 
 
@@ -156,13 +170,14 @@ def ejecutar_desde_excel(
     cantidad=50,
     estado_inicio: str | None = None,
     condiciones: str | None = None,
+    n: int | None = None,
 ):
     df = pd.read_excel(ruta_excel, sheet_name=8, usecols="B", skiprows=3, names=["Subsistema"]) #! here
     filas = df["Subsistema"].dropna().tolist()
     filas = filas[inicio:inicio + cantidad]
     resultados = []
 
-    estado_inicio = estado_inicio or inferir_estado_inicial()
+    estado_inicio = estado_inicio or inferir_estado_inicial(n)
     condiciones = condiciones or ("1" * len(estado_inicio))
     tpm_path = resolver_tpm_path(estado_inicio)
     tpm = np.genfromtxt(tpm_path, delimiter=",")

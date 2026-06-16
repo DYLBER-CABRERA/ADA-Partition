@@ -1,8 +1,8 @@
 from src.main import run_prueba
 
 def ejecutar_pruebas(variante="A", k=4):
-    ESTADO = "1000000000000000000000" # 22 caracteres
-    
+    ESTADO = "1000000000000000000000"  # 22 caracteres
+
     pruebas = [
         ("ABCDEFGHIJKLMNOPQRSTUV", "ABCDEFGHIJKLMNOPQRSTUV"),
         ("ABCDEFGHIJKLMNOPQRSTUV", "ABCDEFGHIJKLMNOPQRSTU"),

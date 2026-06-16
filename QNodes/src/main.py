@@ -25,7 +25,7 @@ def iniciar(nombre_red="N10A", usar_kqnodes=False, k=3,
 
     match = re.match(r"N(\d+)([A-Z])", nombre_red)
     if not match:
-        print(f"❌ Error: Formato '{nombre_red}' inválido. Usa 'N10A', 'N15B', etc.")
+        print(f"Error: Formato '{nombre_red}' inválido. Usa 'N10A', 'N15B', etc.")
         return
 
     n_nodos = int(match.group(1))
@@ -64,18 +64,18 @@ def iniciar(nombre_red="N10A", usar_kqnodes=False, k=3,
         mecanismo_bits = letras_a_bits(mecanismo, n_nodos)
 
     print(f"\n{'='*50}")
-    print(f"🚀 PROCESANDO: {nombre_red}")
-    print(f"📊 Config: {n_nodos} nodos, página {pagina}")
-    print(f"⚙️  ESTRATEGIA: {'KQNodes' if usar_kqnodes else 'QNodes'}")
+    print(f"PROCESANDO: {nombre_red}")
+    print(f"Config: {n_nodos} nodos, página {pagina}")
+    print(f"ESTRATEGIA: {'KQNodes' if usar_kqnodes else 'QNodes'}")
     if usar_kqnodes:
-        print(f"🔢 k={k}")
+        print(f"k={k}")
     print(f"{'='*50}\n")
 
     gestor_redes = Manager(estado_inicial)
     mpt = gestor_redes.cargar_red()
 
     if k == 2:
-        print(f"⚙️  ESTRATEGIA: QNodes (Bipartición original)")
+        print(f"ESTRATEGIA: QNodes (Bipartición original)")
         analizador = QNodes(mpt)
         sia_cero = analizador.aplicar_estrategia(
             estado_inicial,
@@ -84,7 +84,7 @@ def iniciar(nombre_red="N10A", usar_kqnodes=False, k=3,
             mecanismo_bits,
         )
     else:
-        print(f"⚙️  ESTRATEGIA: KQNodes (k={k})")
+        print(f"ESTRATEGIA: KQNodes (k={k})")
         analizador = KQNodes(mpt)
         sia_cero = analizador.aplicar_estrategia(
             estado_inicial,

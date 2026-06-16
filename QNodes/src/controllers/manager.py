@@ -10,9 +10,11 @@ from src.constants.base import (
     ABC_START,
     COLON_DELIM,
     CSV_EXTENSION,
-    PATH_SAMPLES,
     PATH_RESOLVER,
 )
+
+
+DEFAULT_SAMPLES_PATH = Path(__file__).resolve().parent.parent / ".samples"
 
 
 @dataclass
@@ -32,7 +34,7 @@ class Manager:
     """
 
     estado_inicial: str
-    ruta_base: Path = Path(PATH_SAMPLES)
+    ruta_base: Path = DEFAULT_SAMPLES_PATH
 
     @property
     def pagina(self) -> str:

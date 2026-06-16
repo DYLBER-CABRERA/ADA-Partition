@@ -166,6 +166,7 @@ class QNodes(SIA):
             distribucion_particion=dist_marginal_mip,
             tiempo_total=time.time() - self.sia_tiempo_inicio,
             particion=fmt_mip,
+            quiere_hablar=False,
         )
 
     @profile(context={TYPE_TAG: QNODES_ANALYSIS_TAG})
@@ -173,27 +174,12 @@ class QNodes(SIA):
         """
         Implementa el algoritmo Q optimizado para encontrar la partición óptima
         de un sistema que minimiza la pérdida de información.
-
-        Optimizaciones aplicadas respecto a v1:
-        ----------------------------------------
-        1. Poda temprana entre fases: antes de iniciar cada fase i, se revisa si
-           ya existe alguna partición candidata con δ=0 en memoria. Si existe,
-           se retorna inmediatamente sin procesar más fases, ya que δ=0 es el
-           mínimo posible.
-        2. Memoización de biparticiones: las biparticiones individuales (delta) y
-           combinadas (unión) se almacenan en `memoria_biparticion` indexadas por
-           su clave canónica (alcance_tuple, mecanismo_tuple), evitando recalcular
-           la misma bipartición cuando aparece en distintas fases o iteraciones.
-
-        Args:
-            vertices (list[tuple[int, int]]): Lista de vértices donde cada uno es una
-                tupla (tiempo, índice). tiempo=0 para presente (t_0), tiempo=1
-                para futuro (t_1).
-
-        Returns:
-            tuple: La clave en memoria_grupo_candidato que produce la menor EMD,
-                   representando la partición óptima encontrada.
         """
+        # Validación de seguridad: si no hay vértices, no podemos particionar.
+        if not vertices or len(vertices) < 2:
+            self.logger.warning("Sistema vacío o insuficiente, omitiendo cálculo.")
+            return None
+
         indice_emd = INT_ZERO
 
         for i in range(len(vertices) - 1):

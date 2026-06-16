@@ -59,7 +59,7 @@ def ejecutar_pruebas(variante="A", k=4):
     ("BDFHJ", "ABDEGHJ"),
     ("BDFHJ", "ACEGI"),
     ("BDFHJ", "BDFHJ"),
-]
+    ]
 
     for i, (alcance, mecanismo) in enumerate(pruebas, 1):
         print(f"\n{'='*60}")

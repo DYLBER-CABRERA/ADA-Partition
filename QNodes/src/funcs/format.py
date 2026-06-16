@@ -66,3 +66,16 @@ def fmt_parte_q(
     width = max(len(str_purv), len(str_mech)) + 2
 
     return f"⎛{str_purv:^{width}}⎞", f"⎝{str_mech:^{width}}⎠"
+
+
+def fmt_kparticion(bloques: list[list[tuple[int, int]]]) -> str:
+    """
+    Formatea una k-partición (lista de bloques).
+    """
+    tops, bottoms = [], []
+    for bloque in bloques:
+        top, bottom = fmt_parte_q(bloque)
+        tops.append(top)
+        bottoms.append(bottom)
+
+    return "".join(tops) + "\n" + "".join(bottoms) + "\n"

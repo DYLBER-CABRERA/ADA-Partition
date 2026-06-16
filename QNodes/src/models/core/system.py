@@ -265,6 +265,49 @@ class System:
 
         return nuevo_sistema
 
+    def kpartir(self, bloques: list[list[tuple[int, int]]]) -> "System":
+        """
+        Genera una k-partición a partir de una lista de bloques. Cada nodo futuro (n-cubo)
+        se marginaliza respecto a todos los nodos presentes que NO están en su mismo bloque.
+        """
+        from src.funcs.particion import clave_canonica, orden_canonico_nodos
+        from src.constants.base import ACTUAL, EFFECT
+
+        # Generamos una clave única para esta partición para usar la memoria
+        orden = orden_canonico_nodos(self.dims_ncubos, self.indices_ncubos)
+        clave = ("KPART", clave_canonica(bloques, orden))
+
+        if clave not in self.memo:
+            # 1. Mapeamos cada nodo futuro a los nodos presentes que están en su mismo bloque
+            futuro_a_presentes_bloque = {}
+            for bloque in bloques:
+                presentes_del_bloque = np.array(
+                    [idx for (t, idx) in bloque if t == ACTUAL], dtype=np.int8
+                )
+                futuros_del_bloque = [idx for (t, idx) in bloque if t == EFFECT]
+                for f_idx in futuros_del_bloque:
+                    futuro_a_presentes_bloque[f_idx] = presentes_del_bloque
+
+            # 2. Aplicamos la marginalización a cada n-cubo
+            # Marginalizamos (quitamos) los ejes que NO están en el conjunto de presentes de su bloque
+            self.memo[clave] = tuple(
+                cubo.marginalizar(
+                    np.setdiff1d(
+                        cubo.dims,
+                        futuro_a_presentes_bloque.get(
+                            cubo.indice, np.array([], dtype=np.int8)
+                        ),
+                    )
+                )
+                for cubo in self.ncubos
+            )
+
+        nuevo_sistema = System.__new__(System)
+        nuevo_sistema.estado_inicial = self.estado_inicial
+        nuevo_sistema.memo = self.memo
+        nuevo_sistema.ncubos = self.memo[clave]
+        return nuevo_sistema
+
     def distribucion_marginal(self):
         """
         Partiendo de idealmente un subsistema o una bipartición como entrada, se seleccionana los nodos/elementos cuando su estado es OFF o inactivo para cada uno de ellos (mediante la propiedad de las distribuciones marginales) esto nos permite calcular más eficientemente la EMD-Effect, logrando así determinar un coste para dar comparación entre idealmente, un sub-sistema y una bipartición. Hemos de aplicar una reversión en la selección del estado inicial puesto se está trabajando con el dataset original.

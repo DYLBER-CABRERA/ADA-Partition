@@ -16,7 +16,7 @@ from src.constants.models import (
 )
 from src.controllers.manager import Manager
 from src.controllers.strategies.geometric import GeometricSIA
-from src.funcs.base import emd_efecto
+from src.funcs.base import emd_efecto, seleccionar_subestado
 from src.funcs.format import fmt_k_particion
 from src.funcs.system import stirling
 from src.middlewares.profile import profile
@@ -35,6 +35,20 @@ _SUBSCRIPTS: str = "₀₁₂₃₄₅"
 #         el tiempo de la Fase 5, que es despreciable frente a la Fase BFS dominante.
 # Sintaxis: Constante de módulo en SCREAMING_SNAKE_CASE; tipo int anotado explícitamente.
 _C_CANDIDATOS_TOTAL: int = 25
+
+# Lógica: Presupuesto máximo de evaluaciones EMD que puede consumir la búsqueda local de
+#         refinamiento (Fase 6.5, Opt 7). Acota el costo extra a O(_MAX_REFINAMIENTO_EVALS · 2^d)
+#         garantizando que el refinamiento nunca domine sobre la fase BFS Θ(n·2^n). Cada evaluación
+#         es barata porque reutiliza el caché de marginales por (cubo, mecanismo) de la Opt 6.
+# Sintaxis: Constante de módulo entera; se compara contra el contador `evals` en _refinar_local.
+_MAX_REFINAMIENTO_EVALS: int = 40
+
+# Lógica: Cota superior de n (número de variables del subsistema) para activar la búsqueda local.
+#         Para n ≤ 16 cada marginalización opera sobre ≤ 2^16 celdas, costo despreciable frente al
+#         BFS; para n mayores se desactiva el refinamiento para NO añadir trabajo a los sistemas
+#         grandes (donde la prioridad es reducir tiempo, no invertir más evaluaciones costosas).
+# Sintaxis: Constante de módulo entera; se compara contra `len(estado_inicial)` en _refinar_local.
+_REFINAMIENTO_N_MAX: int = 16
 
 
 class KGeometricSIA(GeometricSIA):
@@ -103,6 +117,17 @@ class KGeometricSIA(GeometricSIA):
         # Sintaxis: dict[(str,str,str), dict] — llave: tupla (condicion, alcance, mecanismo);
         #           valor: snapshot completo de todos los atributos de estado de Fases 1–3.
         self._cache_subsistema: dict = {}
+
+        # Lógica: Caché de marginales por (índice_cubo, mecanismo) usado por _dist_particion (Opt 6).
+        #         La distribución marginal de una k-partición se factoriza por n-cubo: el valor del
+        #         cubo i depende ÚNICAMENTE de su índice y del conjunto-mecanismo de la parte que lo
+        #         contiene en su alcance. Como los 25 candidatos y los movimientos de la búsqueda
+        #         local comparten muchos pares (cubo, mecanismo), cachear el valor marginal evita
+        #         re-marginalizar (np.mean sobre 2^d celdas) el mismo cubo una y otra vez.
+        #         Se REINICIA al comienzo de cada aplicar_estrategia(k>2) porque los valores dependen
+        #         del subsistema activo; mantenerlo entre subsistemas distintos daría valores obsoletos.
+        # Sintaxis: dict[(int, frozenset[int]), float] — llave hashable; valor: probabilidad OFF 1-p.
+        self._cache_marg: dict = {}
 
     @profile(context={TYPE_TAG: KGEOMETRIC_ANALYSIS_TAG})
     def aplicar_estrategia(
@@ -189,6 +214,7 @@ class KGeometricSIA(GeometricSIA):
             self.sia_dists_marginales  = _c["sia_dists_marginales"]
             self.sia_tiempo_inicio     = time.time()
             self._flat_data            = _c["_flat_data"]
+            self._flat_matrix          = _c["_flat_matrix"]
             self.vertices              = _c["vertices"]
             self.estado_inicial        = _c["estado_inicial"]
             self.estado_final          = _c["estado_final"]
@@ -225,6 +251,15 @@ class KGeometricSIA(GeometricSIA):
             #         `flat_data[i][estado]` = probabilidad del n-cubo i en el estado dado.
             # Sintaxis: List comprehension; `.ravel()` aplana sin copiar (retorna vista) en O(1).
             self._flat_data = [ncubo.data.ravel() for ncubo in self.sia_subsistema.ncubos]
+
+            # Lógica: Matriz 2D (n_fut × 2^n_mec) de probabilidades aplanadas para la extracción
+            #         vectorizada de columnas en calcular_costo (Opt 5, heredada de GeometricSIA).
+            #         Debe construirse ANTES de calcular_costos_nivel (Fase 3) porque el BFS la consume.
+            # Sintaxis: `np.stack` apila la lista de arrays 1D en un array 2D; el guard evita el error
+            #           de stack sobre lista vacía produciendo una matriz vacía coherente.
+            self._flat_matrix = (
+                np.stack(self._flat_data) if self._flat_data else np.empty((0, 0))
+            )
 
             # Lógica: El conjunto de vértices del grafo de costos es la unión de nodos presentes y futuros.
             # Sintaxis: `set(tupla_a + tupla_b)` concatena las tuplas y elimina duplicados en O(n).
@@ -291,6 +326,7 @@ class KGeometricSIA(GeometricSIA):
                 "sia_subsistema":       self.sia_subsistema,
                 "sia_dists_marginales": self.sia_dists_marginales,
                 "_flat_data":           self._flat_data,
+                "_flat_matrix":         self._flat_matrix,
                 "vertices":             self.vertices,
                 "estado_inicial":       self.estado_inicial,
                 "estado_final":         self.estado_final,
@@ -306,15 +342,26 @@ class KGeometricSIA(GeometricSIA):
         # Sintaxis: Método interno que retorna lista de candidatos; cada candidato es list[(NDArray, NDArray)].
         candidatos = self._generar_candidatos_k(k)
 
+        # Lógica: Reinicia el caché de marginales por (cubo, mecanismo) para esta evaluación (Opt 6).
+        #         Los valores marginales dependen del subsistema activo; reiniciarlo evita arrastrar
+        #         entradas de una llamada anterior con otro subsistema. Dentro de ESTA llamada el caché
+        #         se llena durante la Fase 5 y se reutiliza tanto en candidatos repetidos como en la
+        #         búsqueda local (Fase 6.5), donde la mayoría de cubos conservan su mecanismo.
+        # Sintaxis: Reasignación a dict vacío — más rápida que `.clear()` para dicts grandes.
+        self._cache_marg = {}
+
         # ── Fase 5: Evaluar cada candidato con EMD ───────────────────────────
-        # Lógica: Para cada candidato P_k: aplica k_partir, calcula dist_marginal y mide la pérdida δ_k(P).
+        # Lógica: Para cada candidato P_k: calcula su distribución marginal y mide la pérdida δ_k(P).
         #         El costo total de esta fase es O(C · n · 2^d) ⊆ O(n · 2^n) (C constante).
         # Sintaxis: `for particion in candidatos` itera la lista de candidatos.
         for particion in candidatos:
-            # Lógica: Obtiene el sistema k-partido aplicando las marginalizaciones según la k-partición P.
-            #         `k_partir(P)` aplica ∀cubo: marginalizar(dims ∖ Mᵢ) según su parte i.
-            # Sintaxis: Encadenamiento de métodos: `k_partir` retorna System, `.distribucion_marginal()` NDArray.
-            dist = self.sia_subsistema.k_partir(particion).distribucion_marginal()
+            # Lógica: Obtiene la distribución marginal de la k-partición mediante el evaluador cacheado
+            #         (Opt 6) en lugar de reconstruir un System completo con `k_partir(P)`.
+            #         `_dist_particion` reutiliza marginales por (cubo, mecanismo) ya calculados,
+            #         evitando re-marginalizar cubos cuyo mecanismo se repite entre candidatos.
+            #         El resultado es numéricamente idéntico a `k_partir(P).distribucion_marginal()`.
+            # Sintaxis: Llamada a método interno que retorna NDArray[float32] de probabilidades OFF.
+            dist = self._dist_particion(particion)
 
             # Lógica: Mide δ_k(P) = EMD entre la distribución k-partida y la distribución original del subsistema.
             #         EMD_efecto(u,v) = Σⱼ |u[j]-v[j]| — solución analítica para variables independientes.
@@ -342,12 +389,27 @@ class KGeometricSIA(GeometricSIA):
         # Sintaxis: Desempaquetado de tupla de 3 elementos en una sola línea de asignación.
         mejor_emd, mejor_dist, mejor_particion = self.memoria_k_particiones[mejor_clave]
 
-        # Lógica: Almacena la mejor k-partición en el caché inter-k para habilitar warm-start al siguiente k.
-        #         Cuando el llamador invoque aplicar_estrategia(k+1) sobre el mismo subsistema,
-        #         _generar_candidato_warm_start recuperará esta partición y dividirá su grupo más costoso,
-        #         generando un candidato adicional informado por la solución ya encontrada para k.
+        # Lógica: Almacena la mejor k-partición PRE-REFINAMIENTO en el caché inter-k para el warm-start.
+        #         IMPORTANTE: se guarda la partición ANTES de la búsqueda local (Fase 6.5) a propósito.
+        #         Así la generación de candidatos del siguiente k (que deriva un candidato dividiendo el
+        #         grupo más costoso de la mejor (k-1)-partición) es DETERMINISTA e idéntica a la versión
+        #         sin refinamiento. Esto garantiza que, para todo k, el pool de candidatos contenga la
+        #         misma solución base que antes y, por tanto, que el refinamiento solo pueda IGUALAR o
+        #         REDUCIR la pérdida respecto a la versión previa (mejora monótona, sin regresión).
         # Sintaxis: `self._cache_mejor_por_k[k] = lista` — inserta o sobreescribe la entrada en O(1) amortizado.
         self._cache_mejor_por_k[k] = mejor_particion
+
+        # ── Fase 6.5: Refinamiento por búsqueda local (Opt 7) ────────────────
+        # Lógica: Pule la mejor k-partición moviendo variables entre grupos y conservando solo los
+        #         movimientos que REDUCEN estrictamente δ_k. Solo afecta la Solution retornada, NO la
+        #         cadena de warm-start (que ya guardó la partición pre-refinamiento). El refinamiento es
+        #         barato porque reutiliza el caché de marginales (Opt 6) y está acotado por
+        #         _MAX_REFINAMIENTO_EVALS y por _REFINAMIENTO_N_MAX.
+        # Sintaxis: Reasignación múltiple — el método retorna la mejor terna (partición, emd, dist),
+        #           que puede ser la misma de entrada si ningún movimiento mejoró la pérdida.
+        mejor_particion, mejor_emd, mejor_dist = self._refinar_local(
+            mejor_particion, mejor_emd, mejor_dist
+        )
 
         # ── Fase 7: Formatear y construir Solution ───────────────────────────
         # Lógica: Genera las etiquetas S₁,...,Sₖ usando subíndices Unicode para la visualización.
@@ -1039,3 +1101,306 @@ class KGeometricSIA(GeometricSIA):
             + [(1, int(a)) for a in alc_i]
             for alc_i, mec_i in particion
         ]
+
+    def _dist_particion(self, particion: list) -> NDArray:
+        """
+        Calcula la distribución marginal de una k-partición reutilizando un caché de marginales
+        por (índice de cubo, conjunto-mecanismo). Equivalente exacto, pero más rápido, a
+        `self.sia_subsistema.k_partir(particion).distribucion_marginal()` (Optimización 6).
+
+        Fundamento de la factorización:
+            En `System.k_partir`, cada n-cubo c con c.indice ∈ Aᵢ se transforma en
+            c' = c.marginalizar(c.dims ∖ Mᵢ). Luego `distribucion_marginal` evalúa cada c'
+            en el sub-estado inicial restringido a c'.dims y guarda 1 − P(c'). Por tanto el
+            valor marginal del cubo i depende ÚNICAMENTE de (c.indice, Mᵢ): NO depende del
+            resto de la partición. Esto permite cachear el valor por (índice, mecanismo) y
+            reutilizarlo en todos los candidatos y movimientos de búsqueda local que compartan
+            ese mismo par, evitando re-ejecutar el costoso `np.mean` sobre 2^d celdas.
+
+        Args:
+            particion: Lista de k tuplas (alcance_i, mecanismo_i) como NDArray[int8].
+
+        Returns:
+            NDArray[np.float32]: Distribución marginal (probabilidad OFF por n-cubo), en el
+            mismo orden que `sia_subsistema.ncubos`, idéntica a la de k_partir+distribucion_marginal.
+
+        Complejidad temporal:  O(n) por consulta cacheada; O(n · 2^d) la primera vez por (cubo, Mᵢ).
+        Complejidad espacial:  O(número de pares (cubo, mecanismo) distintos) en el caché.
+        """
+        # Lógica: Alias local del subsistema y de su estado inicial para evitar dereferencias `self.`
+        #         repetidas dentro del bucle (microoptimización de legibilidad y velocidad).
+        # Sintaxis: Asignación de referencias — no copia los objetos, solo crea nombres locales.
+        sub = self.sia_subsistema
+        estado = sub.estado_inicial
+
+        # Lógica: Mapa índice_de_cubo → mecanismo de la parte que lo contiene en su ALCANCE.
+        #         Replica exactamente el `indice_a_mecanismo` que construye System.k_partir.
+        # Sintaxis: Doble bucle sobre la partición; `int(idx)` normaliza np.int8 → int como clave.
+        indice_a_mec: dict = {}
+        for alc_i, mec_i in particion:
+            for idx in alc_i:
+                indice_a_mec[int(idx)] = mec_i
+
+        # Lógica: Array de salida con un valor por n-cubo, en el orden de sub.ncubos (igual que
+        #         distribucion_marginal, que itera enumerate(self.ncubos)).
+        # Sintaxis: `np.empty(size, dtype)` reserva memoria sin inicializar — se llena en el bucle.
+        dist = np.empty(sub.indices_ncubos.size, dtype=np.float32)
+
+        # Lógica: Recorre cada n-cubo del subsistema calculando (o recuperando del caché) su marginal.
+        # Sintaxis: `enumerate(sub.ncubos)` produce (posición i, objeto NCube) — i indexa `dist`.
+        for i, cube in enumerate(sub.ncubos):
+            # Lógica: Índice global del cubo, usado tanto para el mapa como para la clave de caché.
+            # Sintaxis: `int(...)` convierte np.int8 a int Python nativo (hashable y comparable).
+            ind = int(cube.indice)
+
+            # Lógica: Mecanismo de la parte que contiene este cubo en su alcance; None si el cubo no
+            #         pertenece a ninguna parte (rama defensiva, igual que el `else cube` de k_partir).
+            # Sintaxis: `dict.get(clave)` retorna None si la clave no existe, sin lanzar KeyError.
+            mec_i = indice_a_mec.get(ind)
+
+            if mec_i is not None:
+                # Lógica: Clave de caché — el conjunto-mecanismo se vuelve frozenset para ser hashable
+                #         e independiente del orden de los índices dentro del array.
+                # Sintaxis: `frozenset(generador)` crea un conjunto inmutable; `(ind, fs)` es la tupla-llave.
+                clave = (ind, frozenset(int(m) for m in mec_i))
+
+                # Lógica: Si el valor marginal de este (cubo, mecanismo) ya fue calculado, se reutiliza
+                #         directamente, ahorrando la marginalización y la indexación.
+                # Sintaxis: `.get(clave)` retorna el valor cacheado o None; `continue` salta al próximo cubo.
+                val = self._cache_marg.get(clave)
+                if val is not None:
+                    dist[i] = val
+                    continue
+
+                # Lógica: Cache miss — marginaliza el cubo eliminando las dimensiones que NO están en
+                #         el mecanismo Mᵢ, exactamente como `cube.marginalizar(setdiff(dims, Mᵢ))` en k_partir.
+                # Sintaxis: `np.setdiff1d(A, B)` = elementos de A no presentes en B = dims ∖ Mᵢ.
+                mcube = cube.marginalizar(np.setdiff1d(cube.dims, mec_i))
+            else:
+                # Lógica: Cubo fuera de todo alcance — se evalúa el cubo intacto (rama `else cube` de k_partir).
+                #         No se cachea porque es un caso límite poco frecuente.
+                # Sintaxis: `clave = None` marca que no se debe escribir en el caché al final.
+                clave = None
+                mcube = cube
+
+            # Lógica: Evalúa el cubo marginalizado en el sub-estado inicial, idéntico a distribucion_marginal:
+            #         si conserva dimensiones, selecciona la celda del estado inicial; si no, usa el escalar.
+            # Sintaxis: `mcube.dims.size` es 0 (falsy) cuando el cubo quedó sin dimensiones tras marginalizar.
+            if mcube.dims.size:
+                # Lógica: Sub-estado inicial restringido a las dimensiones que sobreviven en el cubo.
+                # Sintaxis: Generator expression dentro de tuple(); `estado[j]` indexa el estado inicial.
+                sub_estado = tuple(estado[j] for j in mcube.dims)
+                # Lógica: Selección de la celda según la notación activa (big/little endian) del sistema.
+                # Sintaxis: `seleccionar_subestado(tupla)` reordena la tupla según la notación; indexa el ndarray.
+                prob = mcube.data[seleccionar_subestado(sub_estado)]
+            else:
+                # Lógica: Cubo colapsado a escalar — su único valor es la probabilidad buscada.
+                # Sintaxis: `mcube.data` es un ndarray 0-dimensional; participa en aritmética como escalar.
+                prob = mcube.data
+
+            # Lógica: La distribución marginal almacena la probabilidad de estado OFF = 1 − P(ON).
+            # Sintaxis: `1.0 - prob` opera sobre escalar o ndarray 0-d; el resultado es el valor marginal.
+            val = 1.0 - prob
+
+            # Lógica: Guarda el valor en el caché solo cuando el cubo tenía mecanismo asociado (clave válida).
+            # Sintaxis: `if clave is not None` evita escribir entradas con llave None de la rama defensiva.
+            if clave is not None:
+                self._cache_marg[clave] = val
+
+            # Lógica: Escribe el valor marginal del cubo i en la posición correspondiente de la distribución.
+            # Sintaxis: Asignación indexada; numpy castea el escalar a float32 automáticamente.
+            dist[i] = val
+
+        # Lógica: Devuelve la distribución marginal completa de la k-partición.
+        # Sintaxis: `return` entrega el NDArray al llamador (Fase 5 o búsqueda local).
+        return dist
+
+    def _particion_a_grupos(self, particion: list, alcances: NDArray) -> "list | None":
+        """
+        Reconstruye la asignación de grupos en índices LOCALES [0..n-1] a partir de una k-partición.
+
+        Es la operación inversa parcial de `_grupos_a_particion`: mapea cada índice global de
+        alcance a su posición local (su columna en el vector de costos) y agrupa esas posiciones
+        según la parte a la que pertenecen. Sirve de punto de partida para la búsqueda local,
+        que opera sobre grupos de índices locales y los reconvierte con `_grupos_a_particion`.
+
+        Args:
+            particion: Lista de k tuplas (alcance_i, mecanismo_i).
+            alcances:  NDArray[int8] con los índices globales de las variables futuras (orden canónico).
+
+        Returns:
+            list[list[int]] | None: k listas de índices locales; None si la partición no cubre
+            exactamente las n variables de `alcances` (estructura incompatible con el refinamiento).
+
+        Complejidad temporal: O(n) — un pase por los alcances de todas las partes.
+        """
+        # Lógica: Mapa índice_global → posición_local (columna en el vector de costos / orden de alcances).
+        # Sintaxis: Dict comprehension; `int(alcances[i])` normaliza la clave a int Python nativo.
+        pos = {int(alcances[i]): i for i in range(len(alcances))}
+
+        # Lógica: Por cada parte, traduce sus índices globales de alcance a posiciones locales.
+        # Sintaxis: List comprehension interna con guardia `if int(v) in pos` para ignorar índices ajenos.
+        grupos: list = []
+        for alc_i, _ in particion:
+            grupos.append([pos[int(v)] for v in alc_i if int(v) in pos])
+
+        # Lógica: Verifica que la partición cubra exactamente las n variables; si no, el refinamiento
+        #         no puede operar de forma consistente y se aborta de forma segura.
+        # Sintaxis: `sum(len(g) for g in grupos)` cuenta el total de índices locales asignados.
+        if sum(len(g) for g in grupos) != len(alcances):
+            return None
+
+        # Lógica: Retorna la lista de grupos en índices locales lista para la búsqueda local.
+        # Sintaxis: `return` entrega la estructura al llamador (_refinar_local).
+        return grupos
+
+    def _refinar_local(
+        self,
+        particion: list,
+        emd_actual: float,
+        dist_actual: NDArray,
+    ) -> tuple:
+        """
+        Búsqueda local de primera-mejora sobre la mejor k-partición encontrada (Optimización 7).
+
+        Algoritmo (Local Search / Hill Climbing — ADA 24A, mejora de heurísticas voraces):
+            Representa la solución como una asignación de las n variables a k grupos. En cada pase,
+            intenta mover cada variable de su grupo a otro grupo; reconstruye la k-partición,
+            la valida y evalúa su δ_k. Acepta el PRIMER movimiento que reduce estrictamente δ_k
+            (estrategia first-improvement) y reinicia el pase desde la nueva solución. Termina
+            cuando ningún movimiento mejora o se agota el presupuesto de evaluaciones.
+
+        Garantía de no-regresión:
+            La solución devuelta tiene δ_k ≤ δ_k de entrada SIEMPRE (mejora monótona), porque solo
+            se aceptan movimientos con mejora estricta y, en el peor caso, se devuelve la entrada.
+
+        Acotación de costo (clave para sistemas grandes):
+            - Se desactiva si n > _REFINAMIENTO_N_MAX para NO añadir trabajo a sistemas grandes.
+            - El número de evaluaciones EMD está acotado por _MAX_REFINAMIENTO_EVALS.
+            - Cada evaluación reutiliza el caché de marginales (Opt 6), por lo que mover una sola
+              variable solo recomputa los marginales de los grupos afectados, no de todo el sistema.
+
+        Args:
+            particion:   Mejor k-partición de la Fase 6 (list[tuple[NDArray, NDArray]]).
+            emd_actual:  δ_k de esa partición.
+            dist_actual: Distribución marginal de esa partición.
+
+        Returns:
+            tuple[list, float, NDArray]: (mejor_particion, mejor_emd, mejor_dist) tras el refinamiento.
+
+        Complejidad temporal: O(_MAX_REFINAMIENTO_EVALS · n · 2^d) en el peor caso (acotada y << BFS).
+        """
+        # Lógica: Recupera índices de alcance y mecanismo del subsistema y el número de variables n.
+        # Sintaxis: @property de System que retornan NDArray[int8]; `len` da el conteo de variables.
+        sub = self.sia_subsistema
+        alcances = sub.indices_ncubos
+        mecanismos = sub.dims_ncubos
+        n = len(alcances)
+        k = self.k
+
+        # Lógica: Compuerta de tamaño — para subsistemas grandes el refinamiento se desactiva para no
+        #         encarecer el tiempo (prioridad en sistemas grandes: reducir tiempo, no añadir trabajo).
+        # Sintaxis: Early return de la terna de entrada sin modificar; `len(self.estado_inicial)` = n_mec.
+        if len(self.estado_inicial) > _REFINAMIENTO_N_MAX:
+            return particion, emd_actual, dist_actual
+
+        # Lógica: Reconstruye la asignación de grupos en índices locales; si la estructura no es
+        #         compatible (no cubre las n variables), se aborta devolviendo la entrada intacta.
+        # Sintaxis: `is None` comprueba el centinela de incompatibilidad retornado por _particion_a_grupos.
+        grupos = self._particion_a_grupos(particion, alcances)
+        if grupos is None:
+            return particion, emd_actual, dist_actual
+
+        # Lógica: Mejores valores conocidos hasta ahora; se actualizan al aceptar un movimiento.
+        # Sintaxis: Asignación múltiple inicial — apuntan a la solución de entrada.
+        mejor_part, mejor_emd, mejor_dist = particion, emd_actual, dist_actual
+
+        # Lógica: Contador de evaluaciones EMD consumidas, acotado por _MAX_REFINAMIENTO_EVALS.
+        # Sintaxis: Entero inicializado en 0; se incrementa tras cada evaluación de candidato.
+        evals = 0
+
+        # Lógica: Bandera que indica si el pase actual encontró una mejora; controla el reinicio.
+        # Sintaxis: `True` para entrar al menos una vez al bucle while.
+        mejoro = True
+
+        # Lógica: Repite pases mientras el último haya mejorado y quede presupuesto de evaluaciones.
+        # Sintaxis: `while cond_a and cond_b` — cortocircuita si alguna condición es falsa.
+        while mejoro and evals < _MAX_REFINAMIENTO_EVALS:
+            mejoro = False
+
+            # Lógica: Recorre cada grupo de origen `gi` del cual se intentará extraer una variable.
+            # Sintaxis: `range(k)` itera los k grupos por su índice.
+            for gi in range(k):
+                # Lógica: No se vacía un grupo: si tiene una sola variable, moverla dejaría el grupo
+                #         sin alcance y la partición sería inválida.
+                # Sintaxis: `<= 1` salta el grupo con `continue` sin intentar movimientos.
+                if len(grupos[gi]) <= 1:
+                    continue
+
+                # Lógica: Itera una copia de los miembros del grupo origen (copia porque la lista se
+                #         muta al mover variables, y no se debe modificar lo que se está iterando).
+                # Sintaxis: `list(grupos[gi])` crea una copia superficial de los índices del grupo.
+                for v in list(grupos[gi]):
+                    # Lógica: Prueba mover la variable v a cada grupo destino gj distinto del origen.
+                    # Sintaxis: `range(k)` itera destinos; el guardia salta gj == gi.
+                    for gj in range(k):
+                        if gj == gi:
+                            continue
+                        # Lógica: Respeta el presupuesto de evaluaciones; si se agota, corta el bucle interno.
+                        # Sintaxis: `break` sale del for de destinos; los controles externos propagan la salida.
+                        if evals >= _MAX_REFINAMIENTO_EVALS:
+                            break
+
+                        # Lógica: Aplica tentativamente el movimiento: quita v de gi y lo añade a gj.
+                        # Sintaxis: `list.remove(v)` elimina la primera aparición; `list.append(v)` lo agrega al final.
+                        grupos[gi].remove(v)
+                        grupos[gj].append(v)
+
+                        # Lógica: Reconstruye la k-partición candidata a partir de los grupos modificados.
+                        # Sintaxis: `_grupos_a_particion` mapea índices locales → NDArray de alcances/mecanismos.
+                        cand = self._grupos_a_particion(grupos, alcances, mecanismos, k)
+
+                        # Lógica: Solo evalúa si la partición candidata es válida (k partes no vacías).
+                        # Sintaxis: `_particion_valida` retorna bool; evita evaluaciones inútiles.
+                        if self._particion_valida(cand):
+                            # Lógica: Distribución y pérdida del candidato usando el evaluador cacheado (Opt 6).
+                            # Sintaxis: Encadenamiento _dist_particion → emd_efecto; cuenta una evaluación.
+                            dist = self._dist_particion(cand)
+                            emd = emd_efecto(dist, self.sia_dists_marginales)
+                            evals += 1
+
+                            # Lógica: Acepta el movimiento solo si mejora estrictamente la pérdida (con un
+                            #         epsilon para evitar oscilaciones por ruido de punto flotante).
+                            # Sintaxis: `emd < mejor_emd - 1e-12` exige mejora estricta superior al epsilon.
+                            if emd < mejor_emd - 1e-12:
+                                mejor_emd, mejor_dist, mejor_part = emd, dist, cand
+                                mejoro = True
+                                # Lógica: First-improvement — se conserva el movimiento (no se revierte) y se
+                                #         reinicia la exploración desde la nueva solución mejorada.
+                                # Sintaxis: `break` sale del for de destinos manteniendo el estado de `grupos`.
+                                break
+                            else:
+                                # Lógica: Movimiento sin mejora — se revierte para restaurar el estado previo.
+                                # Sintaxis: Operaciones inversas remove/append devuelven v al grupo origen.
+                                grupos[gj].remove(v)
+                                grupos[gi].append(v)
+                        else:
+                            # Lógica: Candidato inválido — se revierte el movimiento sin evaluar EMD.
+                            # Sintaxis: Mismas operaciones inversas que restauran `grupos`.
+                            grupos[gj].remove(v)
+                            grupos[gi].append(v)
+
+                    # Lógica: Si hubo mejora en este punto, se interrumpe el recorrido de variables para
+                    #         reiniciar el pase desde la solución mejorada (first-improvement).
+                    # Sintaxis: `if mejoro: break` propaga la salida hacia el for de grupos.
+                    if mejoro:
+                        break
+
+                # Lógica: Propaga la salida del pase hacia el while para reiniciar con `grupos` actualizado.
+                # Sintaxis: `if mejoro: break` rompe el for de grupos de origen.
+                if mejoro:
+                    break
+
+        # Lógica: Devuelve la mejor terna encontrada; idéntica a la entrada si nada mejoró.
+        # Sintaxis: `return` entrega la tupla (partición, emd, dist) al llamador (aplicar_estrategia).
+        return mejor_part, mejor_emd, mejor_dist

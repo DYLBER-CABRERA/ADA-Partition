@@ -387,6 +387,7 @@ class System:
         # Lógica: Devuelve el sistema completamente k-partido, listo para calcular su distribución marginal y comparar con el original.
         # Sintaxis: `return objeto` finaliza la ejecución del método y entrega el nuevo System al llamador.
         return new_sys
+    
 
     def distribucion_marginal(self):
         """

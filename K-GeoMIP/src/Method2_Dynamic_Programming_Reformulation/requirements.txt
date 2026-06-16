@@ -1,0 +1,34 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# K-GeoMIP — Dependencias del proyecto
+# Python >= 3.10
+#
+# Instalación:
+#   pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Núcleo IIT ────────────────────────────────────────────────────────────────
+pyphi>=1.2.0          # Network, Subsystem, Bipartition — motor de cálculo IIT
+pyemd>=0.6.0          # Earth Mover's Distance (EMD / distancia δk)
+numpy>=2.0.2          # Operaciones matriciales sobre TPM y distribuciones
+
+# ── Entrada / Salida ──────────────────────────────────────────────────────────
+pandas>=2.3.3         # Lectura de Excel de pruebas y exportación de resultados
+openpyxl>=3.1.5       # Motor Excel requerido por pandas (.xlsx)
+
+# ── Interfaz y presentación ───────────────────────────────────────────────────
+colorama>=0.4.6       # Colores ANSI en la salida de consola (Windows/Linux)
+pyttsx3>=2.99         # Síntesis de voz texto-a-audio al mostrar resultados
+
+# ── Rendimiento y diagnóstico ─────────────────────────────────────────────────
+pyinstrument>=5.1.2   # Profiling de rendimiento con reporte HTML
+
+# ── Gráficas (opcional) ───────────────────────────────────────────────────────
+matplotlib>=3.7.0     # Gráfica comparativa k=2..5 en modo interactivo
+                      # (requerido por interactive.py — benchmark visual)
+
+# ── Animaciones (opcional) ────────────────────────────────────────────────────
+#manim>=0.19.0         # Scripts de visualización del hipercubo en src/video/
+                      # No requerido para ejecutar el algoritmo principal
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest>=9.0.0         # Suite de pruebas unitarias (ejecutar: pytest tests/)

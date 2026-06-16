@@ -1,0 +1,2034 @@
+% ============================================================
+%  Manual Técnico — K-GeoMIP
+%  Proyecto: K-GeoMIP — Extensión de GeoMIP a k-Particiones
+%  Curso:    Análisis y Diseño de Algoritmos — 2026-1
+%  Autor:    Dylber Cabrera
+%  Fecha:    2026-06-15
+% ============================================================
+\documentclass[12pt,letterpaper]{article}
+
+% ── Codificación y lenguaje ─────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{csquotes}
+
+% ── Diseño de página ────────────────────────────────────────
+\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm,
+            headheight=14pt]{geometry}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{parskip}
+
+% ── Tipografía ──────────────────────────────────────────────
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ── Matemáticas ─────────────────────────────────────────────
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+
+% ── Colores y tablas ────────────────────────────────────────
+\usepackage[dvipsnames,svgnames,x11names]{xcolor}
+\usepackage{colortbl}  % \cellcolor, \rowcolor inside tabular
+
+\definecolor{KGeoBlue}{RGB}{0,102,204}
+\definecolor{KGeoGreen}{RGB}{34,139,34}
+\definecolor{KGeoOrange}{RGB}{210,105,30}
+\definecolor{KGeoGray}{RGB}{128,128,128}
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{codeframe}{RGB}{180,180,180}
+\definecolor{pseudobg}{RGB}{240,248,255}
+
+% ── Gráficos y diagramas ────────────────────────────────────
+\usepackage{float}      % especificador [H] para posición exacta de floats
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows.meta,positioning,fit,calc,
+                backgrounds,decorations.pathreplacing}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% ── Tablas ──────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{makecell}
+
+% ── Código fuente ───────────────────────────────────────────
+\usepackage{listings}
+\lstdefinestyle{python}{
+  language=Python,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{KGeoBlue}\bfseries,
+  stringstyle=\color{KGeoGreen},
+  commentstyle=\color{KGeoGray}\itshape,
+  numberstyle=\tiny\color{KGeoGray},
+  numbers=left,
+  numbersep=6pt,
+  breaklines=true,
+  captionpos=b,
+  showstringspaces=false,
+  tabsize=4,
+  literate=
+    {->}{{$\rightarrow$}}{2}
+    {<-}{{$\leftarrow$}}{2},
+  morekeywords={yield,from,self,True,False,None,def,class,
+    import,return,for,if,in,not,and,or,else,elif,
+    while,continue,break,pass},
+}
+\lstdefinestyle{pseudocode}{
+  backgroundcolor=\color{pseudobg},
+  frame=single,
+  rulecolor=\color{KGeoBlue!40},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{KGeoBlue}\bfseries,
+  commentstyle=\color{KGeoGray}\itshape,
+  breaklines=true,
+  tabsize=2,
+  morekeywords={FUNCION,ENTRADA,SALIDA,PARA,CADA,EN,SI,SINO,
+    RETORNAR,EMITIR,VALIDAR,DESDE,HASTA,INTENTAR,EXCEPCION,
+    IMPRIMIR,MIENTRAS,HACER},
+}
+
+% ── Algoritmos ──────────────────────────────────────────────
+\usepackage[ruled,vlined,linesnumbered,spanish]{algorithm2e}
+\SetAlgoCaptionSeparator{.}
+
+% ── Hiperenlaces ────────────────────────────────────────────
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  citecolor=KGeoGreen,
+  urlcolor=KGeoOrange,
+  pdfauthor={Dylber Cabrera},
+  pdftitle={Manual Tecnico -- K-GeoMIP},
+  pdfsubject={Analisis y Diseno de Algoritmos 2026-1},
+}
+
+% ── Entornos de teorema ─────────────────────────────────────
+\theoremstyle{definition}
+\newtheorem{definition}{Definición}[section]
+\newtheorem{proposition}{Proposición}[section]
+\newtheorem{lemma}{Lema}[section]
+\newtheorem{corollary}{Corolario}[section]
+\theoremstyle{remark}
+\newtheorem{remark}{Observación}[section]
+\newtheorem{example}{Ejemplo}[section]
+
+% ── Cajas con mdframed ──────────────────────────────────────
+\usepackage{mdframed}
+\newmdenv[
+  linecolor=KGeoBlue,
+  backgroundcolor=KGeoBlue!5,
+  linewidth=1.5pt,
+  innerleftmargin=10pt,innerrightmargin=10pt,
+  innertopmargin=8pt,innerbottommargin=8pt,
+]{blueBox}
+\newmdenv[
+  linecolor=KGeoOrange,
+  backgroundcolor=KGeoOrange!5,
+  linewidth=1.5pt,
+  innerleftmargin=10pt,innerrightmargin=10pt,
+  innertopmargin=8pt,innerbottommargin=8pt,
+]{orangeBox}
+
+% ── Encabezados ─────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Manual Técnico --- K-GeoMIP}
+\fancyhead[R]{\small Análisis y Diseño de Algoritmos 2026-1}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Comandos matemáticos propios ────────────────────────────
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\V}{\mathcal{V}}
+\newcommand{\Part}{\mathcal{P}}
+\newcommand{\EMD}{\operatorname{EMD}}
+\newcommand{\Stir}[2]{S(#1,#2)}
+\newcommand{\BigO}[1]{\mathcal{O}(#1)}
+\newcommand{\BigTheta}[1]{\Theta(#1)}
+\newcommand{\kMIP}{k\text{-MIP}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\tensor}{\otimes}
+
+% ── Desactivar "shorthand" de babel para evitar conflictos ──
+\AtBeginDocument{\shorthandoff{"}}
+
+% ════════════════════════════════════════════════════════════
+%  PORTADA
+% ════════════════════════════════════════════════════════════
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{1.5cm}
+  {\Large\bfseries Universidad de Caldas\par}
+  {\large Facultad de Inteligencia Artificial e Ingenierías\par}
+  \vspace{0.5cm}
+  \rule{\linewidth}{1pt}
+  \vspace{1cm}
+
+  {\Huge\bfseries\color{KGeoBlue} Manual Técnico\par}
+  \vspace{0.4cm}
+  {\LARGE\bfseries K-GeoMIP\par}
+  \vspace{0.3cm}
+  {\large Extensión de GeoMIP a k-Particiones\par}
+  \vspace{1cm}
+  \rule{\linewidth}{0.5pt}
+  \vspace{1cm}
+
+  {\large
+    \begin{tabular}{rl}
+      \textbf{Proyecto:} & Algoritmo Geométrico K-GeoMIP \\[4pt]
+      \textbf{Curso:}    & Análisis y Diseño de Algoritmos \\[4pt]
+      \textbf{Período:}  & 2026-1 \\[4pt]
+      \textbf{Autor:}    & Dylber Cabrera - Keyla Cartagena \\[4pt]
+      \textbf{Fecha:}    & 15 de junio de 2026 \\[4pt]
+      \textbf{Versión:}  & 1.0 \\
+    \end{tabular}
+  }
+  \vfill
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ════════════════════════════════════════════════════════════
+%  SECCIÓN 1 — RESUMEN EJECUTIVO
+% ════════════════════════════════════════════════════════════
+\section{Resumen Ejecutivo}
+
+\subsection{Descripción del problema}
+Este manual técnico documenta el diseño, implementación y evaluación experimental de
+\textbf{K-GeoMIP}, una extensión del framework geométrico GeoMIP orientada a resolver el
+problema de la \emph{k-Partición de Mínima Información} (k-MIP) en el contexto de la
+Teoría de la Información Integrada (IIT). Mientras los trabajos anteriores (GeoMIP,
+QNodes) se limitaban al caso de bi-particiones ($k = 2$), K-GeoMIP extiende el marco a
+$k \in \{2, 3, 4, 5\}$, permitiendo analizar divisiones del sistema en múltiples partes
+independientes.
+
+\subsection{Enfoque algorítmico}
+El núcleo de K-GeoMIP es un \textbf{algoritmo voraz con garantía LPT} (Longest Processing
+Time first) que reduce el espacio de búsqueda de $\Stir{n}{k}^2$ evaluaciones a
+$C = 25$ candidatos por llamada. La fase computacionalmente dominante, la construcción de
+la tabla de costos mediante recorrido BFS sobre el hipercubo $n$-dimensional, tiene
+complejidad $\BigTheta{n \cdot 2^n}$, idéntica a la del GeoMIP original para $k = 2$.
+
+\subsection{Principales resultados}
+\begin{itemize}
+  \item \textbf{Sin regresión temporal:} KGeometricSIA$(k \geq 3)$ es comparable o más
+    rápido que GeometricSIA$(k=2)$ en todos los datasets probados (ratio máx.\ $1{,}35\times$).
+  \item \textbf{Speedup masivo en búsqueda:} Para $n=10$, $k=3$: speedup de búsqueda
+    $\approx 3\,110\times$ respecto a la enumeración exhaustiva de Stirling.
+  \item \textbf{Validación formal:} Suite de 13 tests automatizados confirman equivalencia
+    exacta con GeoMIP para $k=2$
+    ($|\delta_2^{\mathrm{KGeo}} - \delta_2^{\mathrm{Geo}}| < 10^{-9}$).
+\end{itemize}
+
+\subsection{Limitaciones}
+La heurística greedy no garantiza optimalidad global para $k \geq 3$. Para sistemas con
+$n > 12$ y $k > 2$, la búsqueda exhaustiva es computacionalmente inviable y la heurística
+puede omitir la partición óptima. Las mejoras propuestas se documentan en la
+Sección~\ref{sec:limitaciones}.
+
+% ════════════════════════════════════════════════════════════
+%  SECCIÓN 2 — FUNDAMENTOS TEÓRICOS
+% ════════════════════════════════════════════════════════════
+\section{Fundamentos Teóricos de k-Particiones}
+
+\subsection{Definición formal de k-particiones}
+
+\begin{definition}[k-Partición]
+Sea $\V = \{v_1, v_2, \ldots, v_n\}$ un conjunto de $n$ variables binarias. Una
+\textbf{k-partición} de $\V$ es una colección $\Part_k = \{S_1, S_2, \ldots, S_k\}$ que
+satisface:
+\begin{align}
+  &\text{(Completitud)}    & S_1 \cup \cdots \cup S_k &= \V \label{eq:completitud}\\
+  &\text{(Disjunción)}     & S_i \cap S_j &= \emptyset \quad \forall\, i \neq j
+                                                        \label{eq:disjuncion}\\
+  &\text{(No trivialidad)} & S_i &\neq \emptyset \quad \forall\, i \label{eq:notrivial}
+\end{align}
+\end{definition}
+
+En el contexto de la IIT, cada parte $S_i$ tiene dos componentes:
+$A_i$ (\textbf{alcance futuro}) y $M_i$ (\textbf{mecanismo presente}).
+La k-partición del subsistema se representa como:
+\begin{equation}
+  \Part_k = \bigl\{ (A_1, M_1),\, (A_2, M_2),\, \ldots,\, (A_k, M_k) \bigr\}
+  \label{eq:kpart-subsistema}
+\end{equation}
+
+\subsection{Formulación del problema de optimización}
+
+\begin{definition}[k-MIP]
+Dado un sistema $\V$ y Matriz de Probabilidad de Transición
+$\mathrm{TPM} = P(\V_{t+1} \mid \V_t)$, la
+\textbf{k-Partición de Mínima Información} (k-MIP) se define como:
+\begin{equation}
+  \kMIP = \argmin_{\Part \in \Pi_k(\V)} \delta_k(\Part)
+  \label{eq:kmip}
+\end{equation}
+donde $\Pi_k(\V)$ es el conjunto de todas las k-particiones de $\V$.
+\end{definition}
+
+\subsection{Función de pérdida \texorpdfstring{$\delta_k$}{delta\_k}}
+
+La pérdida de información para una k-partición $\Part_k$ desde el estado $s$ es:
+\begin{equation}
+  \delta_k(\Part_k, s) = \EMD_{\mathrm{efecto}}\!\Bigl(
+    \underbrace{p\bigl(\V_{t+1} \mid \V_t = s\bigr)}_{u},\;
+    \underbrace{\bigotimes_{i=1}^{k} p\bigl(S_{i,t+1} \mid S_{i,t} = s[M_i]\bigr)}_{v}
+  \Bigr)
+  \label{eq:delta_k}
+\end{equation}
+
+donde $\tensor$ denota el producto tensorial y
+$\EMD_{\mathrm{efecto}}(u, v) = \sum_j |u[j] - v[j]|$ es la
+Earth Mover's Distance analítica para variables independientes.
+
+\subsubsection*{Significado de cada término}
+
+\begin{orangeBox}
+\textbf{En palabras simples:}
+
+\begin{itemize}
+  \item \textbf{$s$ (estado actual):} vector binario de longitud $n$ que indica el estado
+    presente de cada nodo del sistema; por ejemplo $s = (1, 0, 0, \ldots)$ significa que
+    solo el primer nodo está activo.
+
+  \item \textbf{$u = p(\V_{t+1} \mid \V_t = s)$:} distribución de probabilidad del
+    sistema \emph{completo} en el instante siguiente, condicionada al estado $s$.
+    Captura todas las interacciones causales internas: cada nodo puede influir sobre
+    cualquier otro.
+
+  \item \textbf{$v = \bigotimes_{i=1}^{k} p(S_{i,t+1} \mid S_{i,t} = s[M_i])$:}
+    distribución del sistema \emph{después de particionarlo} en $k$ partes independientes.
+    Cada término $p(S_{i,t+1} \mid S_{i,t} = s[M_i])$ es la distribución de la parte
+    $i$ evaluada solo sobre sus propias variables presentes.
+    \begin{itemize}
+      \item $s[M_i]$ denota el sub-vector de $s$ restringido a los índices del mecanismo
+        $M_i$ de la parte $i$; es decir, la parte $i$ ``solo mira'' los nodos que le
+        corresponden en el estado actual, ignorando el resto del sistema.
+      \item El operador $\otimes$ (producto tensorial) combina las $k$ distribuciones
+        marginales como si fueran completamente independientes entre sí.
+    \end{itemize}
+
+  \item \textbf{$\EMD(u,v) = \sum_j |u[j] - v[j]|$:} suma de diferencias absolutas
+    entre ambas distribuciones, evaluada posición a posición sobre los $2^n$ estados
+    posibles del sistema.
+\end{itemize}
+
+\medskip
+\textbf{La intuición:}
+\begin{itemize}
+  \item Si la partición es \textbf{buena} (el sistema realmente opera como $k$ partes
+    independientes), entonces $u \approx v$ y $\delta_k \approx 0$.
+  \item Si la partición es \textbf{mala} (el sistema está integrado causalmente),
+    las distribuciones $u$ y $v$ difieren mucho y $\delta_k$ es alta.
+\end{itemize}
+
+$\delta_k$ mide entonces \textbf{cuánta información causal se destruye} al asumir que el
+sistema opera como $k$ partes independientes en lugar de como un todo integrado.
+El k-MIP es la partición que destruye la menor cantidad posible.
+\end{orangeBox}
+
+\begin{remark}
+Para $k = 2$, la Ecuación~\eqref{eq:delta_k} se reduce exactamente a la función de
+pérdida original de GeoMIP para bi-particiones.
+\end{remark}
+
+\subsection{Números de Stirling del segundo tipo}
+
+El número de k-particiones de $n$ elementos está dado por el
+\textbf{número de Stirling del segundo tipo} $\Stir{n}{k}$:
+\begin{equation}
+  \Stir{n}{k} = k \cdot \Stir{n-1}{k} + \Stir{n-1}{k-1}, \qquad
+  \Stir{n}{1} = \Stir{n}{n} = 1
+  \label{eq:stirling}
+\end{equation}
+
+\begin{table}[ht]
+\centering
+\caption{Valores de $\Stir{n}{k}$ y escalabilidad del espacio de búsqueda}
+\label{tab:stirling}
+\begin{tabular}{@{}r r r r r@{}}
+\toprule
+$n$ & $k=2$ & $k=3$ & $k=4$ & $k=5$ \\
+\midrule
+3  & 3      & 1       & ---       & ---       \\
+4  & 7      & 6       & 1         & ---       \\
+5  & 15     & 25      & 10        & 1         \\
+8  & 127    & 966     & 1\,701    & 1\,050    \\
+10 & 511    & 9\,330  & 34\,105   & 42\,525   \\
+15 & 16\,383 & 2\,375\,101 & \emph{enorme} & \emph{enorme} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La cardinalidad total del espacio de búsqueda del subsistema es
+$\Stir{|A|}{k} \times \Stir{|M|}{k}$. Para $n=10$, $k=3$:
+$9\,330^2 \approx 87$ millones $\Rightarrow$ búsqueda heurística imprescindible.
+
+\subsection{Interpretación geométrica de k-particiones}
+
+\begin{proposition}
+En el espacio de estados representado como hipercubo $n$-dimensional $\mathcal{H}^n$,
+una k-partición corresponde a la división del hipercubo mediante $k-1$ hiperplanos,
+creando $k$ regiones disjuntas.
+\end{proposition}
+
+\subsubsection*{El hipercubo de estados}
+
+Cada estado del sistema es un vértice del hipercubo $n$-dimensional
+$\mathcal{H}^n = \{0,1\}^n$. Para $n = 3$ nodos (A, B, C), el espacio de estados
+tiene $2^3 = 8$ vértices: $(0,0,0), (1,0,0), (0,1,0), \ldots, (1,1,1)$.
+La TPM asigna a cada vértice una distribución de probabilidad sobre los $2^n$ vértices
+del instante siguiente.
+
+\subsubsection*{Cómo una k-partición divide el hipercubo}
+
+Una k-partición $\Part_k = \{(A_1,M_1), \ldots, (A_k,M_k)\}$ divide el hipercubo en
+dos sentidos simultáneos:
+
+\begin{enumerate}
+  \item \textbf{Dimensiones futuras (ejes de alcance):}
+    El conjunto $A_i$ determina qué \emph{ejes del hipercubo futuro} pertenecen a la
+    parte $i$. En términos geométricos, la parte $i$ opera sobre una \emph{cara} del
+    hipercubo de dimensión $|A_i|$.
+
+  \item \textbf{Dimensiones presentes (ejes de mecanismo):}
+    El conjunto $M_i$ determina qué \emph{ejes del hipercubo presente} puede observar
+    la parte $i$. Las dimensiones $\V \setminus M_i$ son ``invisibles'' para esa parte:
+    al marginalizar sobre ellas, el hipercubo de la parte $i$ se proyecta sobre un
+    subespacio de dimensión $|M_i|$.
+\end{enumerate}
+
+\subsubsection*{El corte geométrico como marginalización}
+
+La operación $c.\mathrm{marginalizar}(\mathrm{dims} \setminus M_i)$ colapsa el
+hipercubo $n$-dimensional de cada n-cubo $c$ a un subhipercubo de dimensión $|M_i|$,
+promediando las probabilidades sobre las dimensiones eliminadas.
+Geométricamente: si el hipercubo original tiene 8 vértices y se marginalizan 2 dimensiones,
+el resultado es un subhipercubo de $2^1 = 2$ vértices --- una arista del cubo original.
+
+\begin{example}
+Sistema de 3 nodos, k-partición en dos partes:
+\begin{itemize}
+  \item Parte 1: $A_1 = \{A, B\}$, $M_1 = \{A, B\}$ --- subhipercubo $2$-dimensional (cuadrado)
+  \item Parte 2: $A_2 = \{C\}$, $M_2 = \{C\}$ --- subhipercubo $1$-dimensional (arista)
+\end{itemize}
+La distribución conjunta del sistema k-partido vive en el producto cartesiano de estos
+dos subespacios: $\{0,1\}^2 \times \{0,1\}^1$, que tiene $4 \times 2 = 8$ combinaciones ---
+el mismo número que el espacio original, pero organizado como producto de partes independientes.
+\end{example}
+
+\subsubsection*{Por qué GeoMIP usa geometría del hipercubo}
+
+El algoritmo GeoMIP (y su extensión K-GeoMIP) aprovecha la estructura geométrica del
+hipercubo para calcular eficientemente el vector de costos $\mathbf{c}$:
+
+\begin{itemize}
+  \item Cada vértice del hipercubo de $n$ dimensiones corresponde a un estado del sistema.
+  \item Un recorrido BFS desde el estado inicial $s_0$ hasta el estado final $s_f$ sobre el
+    hipercubo identifica qué \emph{caras} (subconjuntos de dimensiones) contribuyen más
+    a la transición.
+  \item El costo $c_i$ de la variable $i$ cuantifica cuánto ``peso'' tiene esa dimensión
+    en el recorrido BFS: variables con $c_i$ alto son candidatas a separarse en partes
+    distintas porque concentran la mayor parte de la transición causal.
+\end{itemize}
+
+Esta representación geométrica permite reducir el problema combinatorio de evaluar
+$\Stir{n}{k}^2$ particiones a un recorrido sobre $n \cdot 2^n$ vértices del hipercubo,
+que es la fuente de la complejidad $\BigTheta{n \cdot 2^n}$ del algoritmo.
+
+% ════════════════════════════════════════════════════════════
+%  SECCIÓN 3 — ARQUITECTURA DEL SOFTWARE
+% ════════════════════════════════════════════════════════════
+\section{Arquitectura del Software}
+\label{sec:arquitectura}
+
+\subsection{Diagrama de arquitectura en capas}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  layer/.style={
+    draw, rounded corners=4pt, align=center,
+    text width=13.5cm, minimum height=1.8cm, font=\normalsize
+  },
+  arr/.style={-{Stealth}, thick}
+]
+\node[layer, fill=KGeoBlue!20, draw=KGeoBlue] (C1) at (0,0)
+  {\textbf{Capa 1 -- Entrada y Configuración} \\
+   \texttt{exec.py / main.py} \quad \texttt{Manager, Application}};
+\node[layer, fill=KGeoBlue!10, draw=KGeoBlue!70, below=0.45cm of C1] (C2)
+  {\textbf{Capa 2 -- Contrato Base / SIA} \\
+   \texttt{sia.py} \quad \texttt{sia\_preparar\_subsistema(), chequear\_parametros()}};
+\node[layer, fill=KGeoGreen!15, draw=KGeoGreen!70, below=0.45cm of C2] (C3)
+  {\textbf{Capa 3 -- Núcleo Computacional IIT} \\
+   \texttt{system.py, ncube.py} \quad
+   \texttt{System.k\_partir()} \textcolor{KGeoOrange}{\textbf{[NUEVO]}}};
+\node[layer, fill=KGeoOrange!15, draw=KGeoOrange!70, below=0.45cm of C3] (C4)
+  {\textbf{Capa 4 -- Estrategias Computacionales} \\
+   \texttt{controllers/strategies/} \quad
+   \texttt{KGeometricSIA} \textcolor{KGeoOrange}{\textbf{[NUEVO]}}};
+\node[layer, fill=violet!10, draw=violet!60, below=0.45cm of C4] (C5)
+  {\textbf{Capa 5 -- Generadores y Evaluación} \\
+   \texttt{funcs/system.py, funcs/base.py} \quad
+   \texttt{stirling(), k\_particiones()} \textcolor{KGeoOrange}{\textbf{[NUEVO]}}};
+\node[layer, fill=gray!10, draw=gray!60, below=0.45cm of C5] (C6)
+  {\textbf{Capa 6 -- Salida y Resultados} \\
+   \texttt{solution.py, format.py} \quad
+   \texttt{Solution, fmt\_k\_particion()} \textcolor{KGeoOrange}{\textbf{[NUEVO]}}};
+\draw[arr, KGeoBlue]    (C1.south) -- (C2.north);
+\draw[arr, KGeoBlue!70] (C2.south) -- (C3.north);
+\draw[arr, KGeoGreen!70](C3.south) -- (C4.north);
+\draw[arr, KGeoOrange!70](C4.south) -- (C5.north);
+\draw[arr, violet!60]   (C5.south) -- (C6.north);
+\end{tikzpicture}
+\caption{Arquitectura en seis capas del framework K-GeoMIP.}
+\label{fig:capas}
+\end{figure}
+
+\subsection{Diagrama de clases UML}
+
+La Figura~\ref{fig:clases} muestra la jerarquía de clases principal. Cada clase se
+representa con un cuadro de cabecera coloreada y cuerpo con sus atributos y métodos.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  hdr/.style={draw, fill=#1, minimum width=5.4cm, minimum height=0.62cm,
+              font=\small\bfseries, text centered, rounded corners=2pt},
+  bdy/.style={draw, fill=white, minimum width=5.4cm, align=left,
+              font=\ttfamily\scriptsize, inner sep=4pt, text width=5.1cm},
+  arr/.style={-{Stealth}, thick, dashed, KGeoGray},
+  inh/.style={-{Triangle[open]}, thick},
+]
+% === SIA (centro-arriba) ===
+\node[hdr=KGeoBlue!35] (SIA_h) at (0,6.8) {SIA \small(ABC)};
+\node[bdy, below=-\pgflinewidth of SIA_h] (SIA_b) {
+  +sia\_preparar\_subsistema()\\
+  +chequear\_parametros()\\
+  +sia\_cargar\_tpm()\\
+  \#sia\_subsistema: System\\
+  \#sia\_dists\_marginales
+};
+
+% === GeometricSIA (izquierda) ===
+\node[hdr=KGeoGreen!30] (GEO_h) at (-3.2,3.5) {GeometricSIA};
+\node[bdy, below=-\pgflinewidth of GEO_h] (GEO_b) {
+  +aplicar\_estrategia()\\
+  +find\_mip()\\
+  +calcular\_costos\_nivel()\\
+  +calcular\_costo()\\
+  +identificar\_particiones()
+};
+
+% === KGeometricSIA (derecha) ===
+\node[hdr=KGeoOrange!40] (KGEO_h) at (3.2,3.5) {KGeometricSIA \textcolor{KGeoOrange}{*}};
+\node[bdy, below=-\pgflinewidth of KGEO_h] (KGEO_b) {
+  +aplicar\_estrategia(k)\\
+  -\_generar\_candidatos\_k()\\
+  -\_greedy\_multiway()\\
+  -\_grupos\_a\_particion()\\
+  -\_particion\_valida()\\
+  -\_cache\_subsistema: dict
+};
+
+% === System (abajo-izq) ===
+\node[hdr=KGeoBlue!20] (SYS_h) at (-3.2,0.2) {System};
+\node[bdy, below=-\pgflinewidth of SYS_h] (SYS_b) {
+  +condicionar()\\
+  +substraer()\\
+  +bipartir()\\
+  +k\_partir() \textcolor{KGeoOrange}{*}\\
+  +distribucion\_marginal()
+};
+
+% === NCube (abajo-der) ===
+\node[hdr=KGeoBlue!10] (NC_h) at (3.2,0.2) {NCube};
+\node[bdy, below=-\pgflinewidth of NC_h] (NC_b) {
+  +condicionar()\\
+  +marginalizar()\\
+  +indice: np.int8\\
+  +dims: NDArray\\
+  +data: NDArray
+};
+
+% --- Herencia (triángulo hueco apuntando al padre) ---
+\draw[inh] (GEO_h.north) -- ++(0,0.4) -| (SIA_b.south west);
+\draw[inh] (KGEO_h.north) -- ++(0,0.4) -| (SIA_b.south east);
+% Ruta por el hueco entre las dos clases (x=0): evita atravesar cualquier bloque
+\draw[inh] (KGEO_h.west) -- node[midway,above,font=\tiny]{hereda} (GEO_h.east);
+
+% --- Dependencias (flecha punteada) ---
+\draw[arr] (GEO_b.south) -- (SYS_h.north);
+\draw[arr] (SYS_b.east)  -- (NC_h.west);
+\end{tikzpicture}
+\caption{Diagrama de clases UML de K-GeoMIP.
+  El símbolo \textcolor{KGeoOrange}{*} indica componentes nuevos o extendidos.}
+\label{fig:clases}
+\end{figure}
+
+\subsection{Estructura de directorios del repositorio}
+
+\begin{lstlisting}[style=pseudocode,
+  caption={Estructura del repositorio K-GeoMIP (Método 2)},
+  label=lst:estructura]
+K-GeoMIP/
+  src/Method2_Dynamic_Programming_Reformulation/
+    exec.py                        <- Punto de entrada
+    src/
+      main.py                      <- iniciar(), run_prueba()
+      constants/
+        models.py                  <- K_MIN=2, K_MAX=5, KGEOMETRIC_*
+      controllers/
+        manager.py                 <- Manager.generar_red() (chunks)
+        strategies/
+          geometric.py             <- GeometricSIA (k=2)
+          k_geometric.py           <- KGeometricSIA [NUEVO]
+      models/
+        base/
+          sia.py                   <- Contrato SIA (ABC)
+        core/
+          system.py                <- System.k_partir() [NUEVO]
+          ncube.py                 <- NCube
+          solution.py              <- Solution
+      funcs/
+        system.py                  <- stirling, k_particiones [NUEVO]
+        format.py                  <- fmt_k_particion [NUEVO]
+        base.py                    <- emd_efecto, ABECEDARY
+    tests/
+      conftest.py                  <- Fixtures, fix colorama
+      test_kgeomip.py              <- 13 tests (grupos A, B, C)
+    experiments/
+      benchmark_paso6.py           <- Benchmarks experimentales
+    data/samples/
+      N3A.csv ... N20A.csv         <- TPMs de prueba
+\end{lstlisting}
+
+\subsection{Diagrama de secuencia principal}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  obj/.style={draw, fill=KGeoBlue!15, minimum width=2.2cm,
+              minimum height=0.55cm, font=\small, text centered},
+  life/.style={draw, dashed, KGeoGray},
+  fwd/.style={-{Stealth}, thick},
+  ret/.style={-{Stealth}, dashed, KGeoGray},
+  lbl/.style={font=\scriptsize, above},
+]
+% Objetos
+\node[obj] (caller) at (0,0)    {Llamador};
+\node[obj] (kgeo)   at (3.5,0)  {KGeoSIA};
+\node[obj] (sys)    at (7.0,0)  {System};
+\node[obj] (emd)    at (10.5,0) {emd\_efecto};
+% Líneas de vida
+\draw[life] (caller.south) -- ++(0,-10);
+\draw[life] (kgeo.south)   -- ++(0,-10);
+\draw[life] (sys.south)    -- ++(0,-10);
+\draw[life] (emd.south)    -- ++(0,-10);
+% --- mensajes ---
+\draw[fwd]($(caller.south)+(0,-0.5)$)--
+  node[lbl]{aplicar\_estrategia(k>2)}($(kgeo.south)+(0,-0.5)$);
+\draw[fwd]($(kgeo.south)+(0,-1.2)$)--
+  node[lbl]{preparar\_subsistema()}($(sys.south)+(0,-1.2)$);
+\draw[ret]($(sys.south)+(0,-1.8)$)--
+  node[lbl]{System(sub)}($(kgeo.south)+(0,-1.8)$);
+
+\node[font=\scriptsize\itshape,KGeoGray] at (-0.8,-2.4) {[Fase 3]};
+\draw[fwd]($(kgeo.south)+(0,-2.6)$)--
+  node[lbl]{calcular\_costos\_nivel()}($(sys.south)+(0,-2.6)$);
+\draw[ret]($(sys.south)+(0,-3.2)$)--
+  node[lbl]{\_trans\_matrix}($(kgeo.south)+(0,-3.2)$);
+
+\node[font=\scriptsize\itshape,KGeoGray] at (-0.8,-3.8) {[Fase 4]};
+\draw[fwd]($(kgeo.south)+(0,-4.0)$)--
+  node[lbl]{\_generar\_candidatos\_k(k)}($(sys.south)+(0,-4.0)$);
+\draw[ret]($(sys.south)+(0,-4.6)$)--
+  node[lbl]{[p1,...,p25]}($(kgeo.south)+(0,-4.6)$);
+
+\node[font=\scriptsize\itshape,KGeoGray] at (-0.8,-5.2) {[Fase 5]};
+\draw[fwd]($(kgeo.south)+(0,-5.4)$)--
+  node[lbl]{k\_partir(pi)}($(sys.south)+(0,-5.4)$);
+\draw[ret]($(sys.south)+(0,-6.0)$)--
+  node[lbl]{System(k-partido)}($(kgeo.south)+(0,-6.0)$);
+\draw[fwd]($(kgeo.south)+(0,-6.6)$)--
+  node[lbl]{emd\_efecto(dist, orig)}($(emd.south)+(0,-6.6)$);
+\draw[ret]($(emd.south)+(0,-7.2)$)--
+  node[lbl]{$\delta_k$}($(kgeo.south)+(0,-7.2)$);
+
+\draw[ret]($(kgeo.south)+(0,-8.6)$)--
+  node[lbl]{Solution($\delta_{\min}$, k-MIP)}($(caller.south)+(0,-8.6)$);
+\end{tikzpicture}
+\caption{Diagrama de secuencia de \texttt{KGeometricSIA.aplicar\_estrategia()} para $k > 2$.}
+\label{fig:secuencia}
+\end{figure}
+
+\subsection{Patrones de Diseño Aplicados}
+
+\begin{table}[H]
+\centering
+\caption{Patrones de diseño utilizados en K-GeoMIP}
+\label{tab:patrones}
+\begin{tabular}{@{}l p{4.2cm} p{5cm}@{}}
+\toprule
+\textbf{Patrón} & \textbf{Dónde se aplica} & \textbf{Beneficio} \\
+\midrule
+\textbf{Strategy} &
+  \texttt{GeometricSIA}, \texttt{KGeometricSIA} heredan de \texttt{SIA} y
+  proveen su propia \texttt{aplicar\_estrategia()} &
+  Intercambiabilidad sin modificar \texttt{Manager} \\[4pt]
+\textbf{Template Method} &
+  \texttt{SIA} define el esqueleto; subclases rellenan \texttt{aplicar\_estrategia()} &
+  Reutilización del flujo de preparación del subsistema \\[4pt]
+\textbf{Factory Method} &
+  \texttt{Manager} instancia la estrategia según \texttt{KGEOMIP\_K} &
+  Desacoplamiento entre config.\ y clase concreta \\[4pt]
+\textbf{Iterator/Generator} &
+  \texttt{k\_particiones()} usa \texttt{yield} &
+  Carga perezosa: $O(n)$ RAM independiente de $\Stir{n}{k}$ \\[4pt]
+\textbf{Flyweight/Cache} &
+  \texttt{\_cache\_subsistema} en \texttt{KGeometricSIA} &
+  Elimina recómputo del BFS entre distintos $k$ (ahorro 75\%) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Decisiones Arquitectónicas Clave}
+
+\subsubsection{Reutilización de la tabla BFS geométrica}
+\textbf{Decisión:} \texttt{KGeometricSIA} llama a \texttt{calcular\_costos\_nivel()} de
+\texttt{GeometricSIA} sin reimplementarlo.
+
+\textbf{Motivación:} La tabla de costos $\mathbf{C}[s_0, s_f]$ es independiente de $k$;
+captura el peso de cada variable respecto al estado inicial, que es el mismo insumo para
+la heurística LPT sin importar cuántas partes se definan.
+
+\textbf{Trade-off:} KGeometricSIA queda acoplado a la implementación interna de
+GeometricSIA. Se aceptó dado que GeometricSIA es la implementación de referencia estable.
+
+\subsubsection{Generadores perezosos vs.\ listas materializadas}
+\textbf{Decisión:} \texttt{k\_particiones()} es un generador Python.
+
+\textbf{Motivación:} Para $n=10$, $k=3$, materializar todas las particiones requeriría
+$9330^2 \times 10 \times 4\,\text{bytes} \approx 3{,}5\,\text{GB}$ de RAM.
+
+\subsubsection{$k=2$ delegado a GeometricSIA}
+\textbf{Decisión:} Si el llamador pasa $k=2$, \texttt{KGeometricSIA} delega
+inmediatamente a \texttt{GeometricSIA.\allowbreak{}aplicar\_estrategia()},
+que hace búsqueda \textbf{exacta} (no heurística) sobre bi-particiones.
+
+\subsubsection{Constante $C = 25$ candidatos}
+\textbf{Decisión:} Número total de candidatos fijo en $C = 25$
+(3 deterministas + hasta 22 perturbaciones aleatorias con semilla reproducible).
+
+\textbf{Motivación:} Para los datasets de prueba, 25 evaluaciones de EMD toman
+$< 2\,\text{ms}$, mientras que el BFS toma $\sim 100\,\text{ms}$ ($n=10$). Aumentar
+$C$ a 100 solo agregaría $\sim 7\,\text{ms}$ de impacto mínimo.
+
+% ════════════════════════════════════════════════════════════
+%  SECCIÓN 4 — DISEÑO ALGORÍTMICO
+% ════════════════════════════════════════════════════════════
+\section{Diseño Algorítmico}
+\label{sec:diseno}
+
+\subsection{\texorpdfstring{\texttt{System.k\_partir()}}{System.k\_partir()} --- Núcleo}
+
+Sea un subsistema con n-cubos $\mathbf{c} = (c_0, \ldots, c_{n-1})$. Dado
+$\mathrm{particion} = [(A_1, M_1), \ldots, (A_k, M_k)]$, la transformación es:
+
+\begin{equation}
+  \forall\, c_j: \quad c_j' \leftarrow c_j.\mathrm{marginalizar}
+  \bigl(c_j.\mathrm{dims} \setminus M_{i^*}\bigr), \quad
+  i^* = \text{único } i \text{ tal que } c_j.\mathrm{índice} \in A_i
+  \label{eq:k_partir}
+\end{equation}
+
+\begin{proposition}
+\texttt{k\_partir}$\bigl([(A_1, M_1), (\V \setminus A_1, \V \setminus M_1)]\bigr)
+\equiv \texttt{bipartir}(A_1, M_1)$.
+\end{proposition}
+
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwIn{$\mathrm{particion} = [(A_1, M_1), \ldots, (A_k, M_k)]$}
+\KwOut{Nuevo \texttt{System} con n-cubos marginalizados}
+$\mathrm{new\_sys} \leftarrow \texttt{System.\_\_new\_\_}(\texttt{System})$\;
+$\mathrm{new\_sys.estado\_inicial} \leftarrow \mathrm{self.estado\_inicial}$\;
+$\mathrm{indice\_a\_mec} \leftarrow \{\}$\;
+\ForEach{$(A_i, M_i) \in \mathrm{particion}$}{
+  \ForEach{$\mathrm{idx} \in A_i$}{
+    $\mathrm{indice\_a\_mec}[\mathrm{int(idx)}] \leftarrow M_i$\;
+  }
+}
+$\mathrm{new\_sys.ncubos} \leftarrow \texttt{tuple}($
+  $\mathrm{cube.marginalizar}(\mathrm{cube.dims} \setminus
+    \mathrm{indice\_a\_mec}[\mathrm{cube.indice}])$
+  $\text{ for cube in self.ncubos})$\;
+\KwRet{$\mathrm{new\_sys}$}\;
+\caption{\texttt{System.k\_partir(particion)}}
+\label{alg:k_partir}
+\end{algorithm}
+
+\subsection{Generadores de k-particiones}
+
+\subsubsection{\texttt{stirling(n, k)} --- Programación dinámica}
+
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwIn{$n$ (tamaño), $k$ (número de partes)}
+\KwOut{$\Stir{n}{k} \in \N_0$}
+\If{$k = 0$ \textbf{or} $k > n$}{\KwRet{$0$}}
+\If{$k = 1$ \textbf{or} $k = n$}{\KwRet{$1$}}
+$\mathrm{prev}[0..k] \leftarrow [0, 1, 0, \ldots, 0]$\;
+\For{$i \leftarrow 2$ \KwTo $n$}{
+  $\mathrm{curr}[j] \leftarrow j \cdot \mathrm{prev}[j] + \mathrm{prev}[j-1]
+    \quad \forall\, j \in [1, \min(i,k)]$\;
+  $\mathrm{prev} \leftarrow \mathrm{curr}$\;
+}
+\KwRet{$\mathrm{prev}[k]$}\;
+\caption{\texttt{stirling(n, k)} --- O(n·k) tiempo, O(k) espacio}
+\label{alg:stirling}
+\end{algorithm}
+
+\subsubsection{\texttt{particionar\_conjunto(elementos, k)} --- Generador RGS}
+
+\paragraph{Definición formal.}
+Una \textbf{Cadena de Crecimiento Restringido} (\emph{Restricted Growth String}, RGS)
+es un arreglo $\mathbf{a} = [a_0, a_1, \ldots, a_{n-1}]$ donde $a_i \in \{0,\ldots,k-1\}$
+indica a qué grupo pertenece el $i$-ésimo elemento, sujeto a dos invariantes:
+
+\begin{center}
+\begin{tabular}{@{}l p{9cm}@{}}
+\toprule
+\textbf{Invariante} & \textbf{Por qué} \\
+\midrule
+$a_0 = 0$ siempre &
+  El primer elemento siempre se asigna al grupo~0.
+  Esto \emph{rompe la simetría de los grupos}: sin esta regla,
+  $\{0{,}1\},\{2\}$ y $\{2\},\{0{,}1\}$ serían dos RGS distintas
+  para la misma partición lógica. \\[4pt]
+$a_i \leq \max(a_0,\ldots,a_{i-1}) + 1$ &
+  No se puede ``saltar'' un número de grupo. Si el grupo~1 no ha
+  aparecido antes, no se puede asignar el grupo~2: eso dejaría
+  el grupo~1 vacío, violando la no-trivialidad
+  (condición~\ref{eq:notrivial}). \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+La RGS es \textbf{válida para $k$ partes} cuando $\max(\mathbf{a}) = k-1$
+(todos los grupos $0, 1, \ldots, k-1$ han sido usados al menos una vez).
+
+\begin{proposition}[Biyección RGS-Particiones]
+Existe una correspondencia biunívoca entre las RGS con $\max(\mathbf{a}) = k-1$
+y las k-particiones de $\{0, \ldots, n-1\}$.
+El número de RGS válidas es exactamente $\Stir{n}{k}$.
+\end{proposition}
+
+\begin{orangeBox}
+\textbf{¿Qué significa ``correspondencia biunívoca''?}
+
+Una correspondencia \textbf{biunívoca} (o \emph{biyección}) entre dos conjuntos $X$ e $Y$
+es una función $f: X \to Y$ que satisface simultáneamente dos propiedades:
+
+\begin{itemize}
+  \item \textbf{Inyectiva} (\emph{uno a uno}): elementos distintos de $X$ producen
+    imágenes distintas en $Y$.
+    $x_1 \neq x_2 \;\Rightarrow\; f(x_1) \neq f(x_2)$.
+    En nuestro caso: dos RGS distintas $\mathbf{a} \neq \mathbf{b}$ generan
+    particiones distintas. \textbf{Sin duplicados.}
+
+  \item \textbf{Sobreyectiva} (\emph{sobre}): todo elemento de $Y$ tiene al menos
+    una preimagen en $X$.
+    $\forall\, y \in Y,\; \exists\, x \in X : f(x) = y$.
+    En nuestro caso: toda k-partición posible de $\{0,\ldots,n-1\}$ tiene exactamente
+    una RGS canónica que la representa. \textbf{Sin omisiones.}
+\end{itemize}
+
+\medskip
+\textbf{Por qué se cumple en RGS:}
+\begin{enumerate}
+  \item \textbf{Inyectividad}: la regla $a_0 = 0$ fija un representante canónico
+    por cada clase de equivalencia de grupos (elimina permutaciones de etiquetas).
+    La regla de crecimiento $a_i \leq \max_{j<i}(a_j) + 1$ garantiza que no haya
+    dos cadenas distintas que describan la misma asignación de elementos a grupos.
+
+  \item \textbf{Sobreyectividad}: dada cualquier k-partición
+    $\{S_0, S_1, \ldots, S_{k-1}\}$, basta ordenar sus partes de modo que
+    $\min(S_0) < \min(S_1) < \cdots < \min(S_{k-1})$ (el grupo~$i$ es el que
+    contiene el $i$-ésimo mínimo), y asignar $a[j] = i$ si el elemento~$j$
+    pertenece a $S_i$. El resultado es siempre una RGS válida con $\max = k-1$.
+\end{enumerate}
+
+\medskip
+\textbf{Consecuencia práctica:} el DFS sobre RGS genera \emph{exactamente}
+$\Stir{n}{k}$ cadenas válidas --- el mismo número que k-particiones existen ---
+sin repetir ninguna ni omitir ninguna. Esto hace que el generador sea correcto
+por construcción, sin necesidad de desduplicar a posteriori.
+\end{orangeBox}
+
+\paragraph{Ejemplo trazado: elementos $= \{0,1,2\}$, $k = 2$.}
+
+\begin{blueBox}
+\textbf{Problema:} Generar todas las 2-particiones de $\{0,1,2\}$.
+Resultado esperado: $\Stir{3}{2} = 3$ particiones.
+
+\medskip
+Las tres particiones y sus RGS canónicas:
+\begin{center}
+\begin{tabular}{@{}l l@{}}
+\toprule
+\textbf{Partición} & \textbf{RGS} $\mathbf{a}$ \\
+\midrule
+$S_1=\{0,1\},\; S_2=\{2\}$ & $[0, 0, 1]$ \\
+$S_1=\{0,2\},\; S_2=\{1\}$ & $[0, 1, 0]$ \\
+$S_1=\{0\},\;   S_2=\{1,2\}$ & $[0, 1, 1]$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{blueBox}
+
+\begin{lstlisting}[style=pseudocode,
+  caption={Árbol de recursión de \texttt{\_rgs([0,1,2], k=2)} --- 3 hojas válidas},
+  label=lst:rgs-trace]
+a = [0, ?, ?]         <- a[0]=0 fijo; llamada inicial: _rgs(pos=1, max=0)
+
+_rgs(pos=1, max=0)    v puede ser 0..min(max+1,k-1) = 0..1
+  |
+  +-- v=0: a=[0,0,?]  _rgs(pos=2, max=0)
+  |     |
+  |     +-- v=0: a=[0,0,0]  max=0 != k-1=1  INVALIDO (falta grupo 1)
+  |     |
+  |     +-- v=1: a=[0,0,1]  max=1 == k-1=1  ** VALIDO **
+  |               Parte_0={0,1}  Parte_1={2}
+  |
+  +-- v=1: a=[0,1,?]  _rgs(pos=2, max=1)
+        |
+        +-- v=0: a=[0,1,0]  max=1 == k-1=1  ** VALIDO **
+        |         Parte_0={0,2}  Parte_1={1}
+        |
+        +-- v=1: a=[0,1,1]  max=1 == k-1=1  ** VALIDO **
+                  Parte_0={0}    Parte_1={1,2}
+
+Total: 3 particiones = S(3,2)  (sin repeticiones, sin omisiones)
+\end{lstlisting}
+
+\paragraph{Cómo se traduce la RGS a una partición.}
+Cada posición $i$ del arreglo $\mathbf{a}$ indica directamente a qué parte va
+el elemento $i$. Por ejemplo, $\mathbf{a} = [0, 0, 1]$:
+\begin{itemize}
+  \item $a[0] = 0 \;\Rightarrow$ elemento~$0 \to$ Parte$_0$
+  \item $a[1] = 0 \;\Rightarrow$ elemento~$1 \to$ Parte$_0$
+  \item $a[2] = 1 \;\Rightarrow$ elemento~$2 \to$ Parte$_1$
+\end{itemize}
+Resultado: Parte$_0 = \{0,1\}$, Parte$_1 = \{2\}$
+$\;\longrightarrow\;$ partición $\bigl(\{0,1\},\{2\}\bigr)$.
+
+Gracias a que $a_0 = 0$ es fijo y la regla de crecimiento impone un orden canónico
+sobre los grupos, \emph{cada partición tiene exactamente una RGS} (sin duplicados) y
+\emph{cada RGS produce exactamente una partición} (sin omisiones). El DFS enumera todas
+las RGS válidas con $\max = k-1$ de forma perezosa vía \texttt{yield}, consumiendo
+solo $\BigO{n}$ de memoria en la pila independientemente de $\Stir{n}{k}$.
+
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwIn{$\mathrm{elementos}$, $k$}
+\KwOut{Generador de k-particiones (yield)}
+$\mathbf{a}[0..n-1] \leftarrow \mathbf{0}$\;
+\SetKwFunction{FRGS}{rgs}
+\SetKwProg{Fn}{Función}{:}{}
+\Fn{\FRGS{pos, max\_usado}}{
+  \If{pos $=$ n}{
+    \If{max\_usado $=$ k-1}{
+      $\mathrm{partes} \leftarrow [[\,],\ldots,[\,]]$\;
+      yield $\texttt{tuple}(\mathrm{partes})$\;
+    }
+    \KwRet{}
+  }
+  \For{$v \leftarrow 0$ \KwTo $\min(\mathrm{max\_usado}+1,\; k-1)$}{
+    $a[\mathrm{pos}] \leftarrow v$\;
+    \FRGS{pos+1, $\max(\mathrm{max\_usado}, v)$}\;
+  }
+}
+\FRGS{1, 0}\;
+\caption{\texttt{particionar\_conjunto(elementos, k)} --- DFS sobre RGS, $\BigO{n}$ espacio}
+\label{alg:rgs}
+\end{algorithm}
+
+\subsection{Estrategia heurística: \texttt{KGeometricSIA}}
+\label{sec:kgeomip}
+
+\subsubsection{Principio del algoritmo LPT}
+
+\paragraph{Definición.}
+\textbf{LPT} (\emph{Longest Processing Time first}) es una heurística greedy para
+repartir $n$ variables en $k$ grupos minimizando el \textbf{makespan}
+(peso del grupo más cargado):
+\begin{equation}
+  \min\; \max_{j=0}^{k-1} \sum_{i \in G_j} c_i
+  \label{eq:lpt-objetivo}
+\end{equation}
+
+\begin{blueBox}
+\textbf{Analogía:} Imagina $k$ mochilas vacías y $n$ objetos con pesos distintos.
+LPT toma primero el objeto \emph{más pesado} y lo coloca en la mochila con menor
+peso acumulado. Luego el segundo más pesado a la más vacía, y así sucesivamente.
+Al terminar, las mochilas tienden a tener pesos similares --- el desbalance es mínimo.
+\end{blueBox}
+
+\paragraph{Algoritmo paso a paso.}
+Dado el vector de costos $\mathbf{c}$ y el número de grupos $k$:
+\begin{enumerate}
+  \item \textbf{Ordenar} las variables de \textbf{mayor a menor} costo:
+    $c_{\sigma(0)} \geq c_{\sigma(1)} \geq \cdots \geq c_{\sigma(n-1)}$.
+  \item \textbf{Mantener} un \emph{heap mínimo} sobre el peso acumulado de los $k$ grupos
+    (inicialmente todos en cero).
+  \item \textbf{Para cada variable} en orden descendente:
+    extraer el grupo de menor peso del heap, asignarle la variable,
+    actualizar su peso y reinsertar en el heap.
+\end{enumerate}
+Complejidad total: $\BigO{n \log n}$ (dominada por el ordenamiento inicial).
+
+\paragraph{Ejemplo concreto --- variables $[a,b,c,d,e]$, costos $[5,3,4,2,1]$, $k=3$.}
+
+\textbf{Paso 1 --- Ordenar desc:} $a(5),\; c(4),\; b(3),\; d(2),\; e(1)$.
+
+\textbf{Paso 2 --- Asignación greedy} con heap mínimo sobre sumas de grupos:
+
+\begin{center}
+\begin{tabular}{@{}c l r r r r p{4.2cm}@{}}
+\toprule
+\textbf{It.} & \textbf{Var.} & \textbf{Costo} &
+$\Sigma G_0$ & $\Sigma G_1$ & $\Sigma G_2$ & \textbf{Acción} \\
+\midrule
+1 & $a$ & 5 & \textbf{5} & 0 & 0 &
+  heap min $= 0$ ($G_0$) $\to$ asignar a $G_0$ \\
+2 & $c$ & 4 & 5 & \textbf{4} & 0 &
+  heap min $= 0$ ($G_1$) $\to$ asignar a $G_1$ \\
+3 & $b$ & 3 & 5 & 4 & \textbf{3} &
+  heap min $= 0$ ($G_2$) $\to$ asignar a $G_2$ \\
+4 & $d$ & 2 & 5 & 4 & \textbf{5} &
+  heap min $= 3$ ($G_2$) $\to$ asignar a $G_2$ \\
+5 & $e$ & 1 & 5 & \textbf{5} & 5 &
+  heap min $= 4$ ($G_1$) $\to$ asignar a $G_1$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Resultado:}
+$G_0 = \{a\} = 5$,\quad
+$G_1 = \{c,\, e\} = 5$,\quad
+$G_2 = \{b,\, d\} = 5$
+$\;\Rightarrow\;$ makespan $= \max(5,5,5) = 5$ \quad\emph{(balance perfecto en este caso)}.
+
+\paragraph{Garantía formal de Graham (1969).}
+
+\begin{blueBox}
+\begin{equation}
+  \mathrm{makespan}(\mathrm{LPT}) \leq
+  \left(\frac{4}{3} - \frac{1}{3k}\right) \cdot \mathrm{OPT}
+  \label{eq:lpt-garantia}
+\end{equation}
+\begin{itemize}
+  \item $k=3$: makespan $\leq 1{,}22 \cdot \mathrm{OPT}$
+    (a lo sumo 22\% peor que el óptimo).
+  \item $k=5$: makespan $\leq 1{,}27 \cdot \mathrm{OPT}$
+    (a lo sumo 27\% peor).
+\end{itemize}
+Esta es la cota más ajustada conocida para LPT: demostrable que no existe
+garantía mejor en el caso general de $k$ máquinas idénticas.
+\end{blueBox}
+
+\paragraph{Advertencia: la garantía LPT es sobre makespan, no sobre EMD.}
+
+\begin{orangeBox}
+La cota de Graham aplica sobre el \textbf{balance de costos} (makespan),
+\emph{no} sobre la pérdida de información causal $\delta_k$~(EMD):
+
+\begin{itemize}
+  \item LPT asegura que los grupos tienen pesos $c_i$ \emph{similares entre sí}.
+  \item LPT \textbf{no} garantiza que esa partición sea la de menor $\delta_k$,
+    porque el EMD captura \emph{correlaciones conjuntas} entre variables,
+    mientras que $c_i$ solo refleja el peso marginal de cada variable de forma
+    independiente.
+\end{itemize}
+
+\medskip
+Por eso K-GeoMIP genera \textbf{tres candidatos complementarios}
+(LPT, round-robin, bloques) más hasta 22 perturbaciones aleatorias,
+y elige entre todos el que minimiza el EMD real evaluando $\delta_k$
+directamente sobre cada candidato.
+\end{orangeBox}
+
+\subsubsection{Las tres estrategias de generación de candidatos}
+
+\begin{table}[H]
+\centering
+\caption{Las tres estrategias deterministas de \texttt{\_generar\_candidatos\_k}}
+\label{tab:estrategias}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Estrategia} & \textbf{Descripción} & \textbf{Costo} & \textbf{Garantía} \\
+\midrule
+$E_1$ --- LPT & Sort $\downarrow$, heap mínimo & $\BigO{n \log n}$ &
+  makespan $\leq (4/3 - 1/(3k))\cdot\mathrm{OPT}$ \\
+$E_2$ --- Round-robin & Sort $\uparrow$, asignación cíclica & $\BigO{n \log n}$ &
+  Distribución uniforme \\
+$E_3$ --- Bloques & Bloques de $\lfloor n/k \rfloor$ por índice & $\BigO{n}$ &
+  Dependencias contiguas \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Más hasta $C - 3 = 22$ \textbf{perturbaciones aleatorias} con semilla reproducible
+$c_i' = c_i \cdot \mathcal{U}(0{,}6;\;1{,}4)$, con deduplicación por firma
+\texttt{frozenset}.
+
+\paragraph{Mecanismo adaptativo de $n_{\mathrm{obj}}$.}
+
+El límite de candidatos está definido como constante
+\texttt{\_C\_CANDIDATOS\_TOTAL = 25} (línea 37 de \texttt{k\_geometric.py}),
+pero el número real de candidatos generados es \textbf{adaptativo}:
+\begin{equation}
+  n_{\mathrm{obj}} = \min\!\bigl(C,\; \Stir{n}{k}\bigr)
+  \label{eq:n_obj}
+\end{equation}
+
+Esto significa que si el espacio de particiones es más pequeño que $C = 25$
+(por ejemplo, $\Stir{3}{2} = 3$), el generador produce solo las 3 particiones
+realmente existentes y no desperdicia iteraciones buscando duplicados.
+Por el contrario, si $\Stir{n}{k} \gg 25$ (como $\Stir{10}{3} \approx 9\,330$),
+el generador produce los 25 candidatos completos.
+
+\begin{center}
+\begin{tabular}{@{}r r r r@{}}
+\toprule
+$n$ & $k$ & $\Stir{n}{k}$ & $n_{\mathrm{obj}}$ efectivo \\
+\midrule
+3 & 2 & 3       & 3  \quad {\small(exhaustivo)} \\
+4 & 3 & 6       & 6  \quad {\small(exhaustivo)} \\
+5 & 3 & 25      & 25 \quad {\small(exactamente C)} \\
+6 & 3 & 90      & 25 \quad {\small(heurístico)} \\
+10 & 3 & 9\,330 & 25 \quad {\small(heurístico)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{¿Por qué $C = 25$ y no más?}
+
+\begin{blueBox}
+El tiempo dominante del algoritmo \textbf{no} son las perturbaciones
+($\BigO{n \log n}$ por candidato), sino la \textbf{evaluación EMD}
+de cada candidato ($\BigO{n \cdot 2^n}$ por candidato):
+
+\begin{itemize}
+  \item Para $n=10$: evaluar 1 candidato cuesta $\approx 10 \cdot 1024$ operaciones.
+    Evaluar 25 cuesta $25 \times$ eso --- aun así, esto es apenas una fracción del
+    costo del BFS ($\BigTheta{n \cdot 2^n}$ fijo).
+  \item Aumentar $C$ de 25 a 100 multiplicaría el tiempo de evaluación de candidatos
+    por $4\times$, pero con beneficio marginal casi nulo en calidad: las perturbaciones
+    con $\mathcal{U}(0{,}6;\;1{,}4)$ ya cubren suficiente variedad del espacio de
+    búsqueda para $n \leq 12$.
+  \item El speedup versus búsqueda exhaustiva se mantiene en
+    $\Stir{n}{k}^2 / C \approx 3{,}47 \times 10^6$ para $n=10$, $k=3$
+    (ver Ecuación~\ref{eq:speedup}), independientemente de si $C = 25$ o $C = 100$.
+\end{itemize}
+
+\medskip
+$C = 25$ es el punto de equilibrio \textbf{costo-beneficio}: suficiente variedad
+de candidatos para obtener una buena aproximación, sin que el costo de evaluación
+EMD supere al del BFS que domina la complejidad total.
+\end{blueBox}
+
+\subsubsection{Pseudocódigo completo de \texttt{aplicar\_estrategia}}
+
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwIn{condicion, alcance, mecanismo, tpm, $k \in \{2,\ldots,5\}$}
+\KwOut{\texttt{Solution} con $\delta_k$ mínima}
+\If{$k = 2$}{\KwRet{\texttt{GeometricSIA.aplicar\_estrategia}(...)}\;}
+\tcc{Fase 1: preparar subsistema}
+\texttt{sia\_preparar\_subsistema(condicion, alcance, mecanismo, tpm)}\;
+\tcc{Fase 3: tabla de costos BFS --- $\BigTheta{n \cdot 2^n}$}
+\For{nivel $\leftarrow 1$ \KwTo $n$}{
+  \texttt{calcular\_costos\_nivel}(estado\_final, nivel)\;
+}
+\tcc{Fase 4: generar $C = 25$ candidatos}
+$\mathbf{c} \leftarrow \texttt{\_trans\_matrix}[s_0, s_f]$\;
+candidatos $\leftarrow [\texttt{LPT}(\mathbf{c}),\; \texttt{round\_robin}(\mathbf{c}),\;
+  \texttt{bloques}(n,k)] + \text{perturbaciones}$\;
+\tcc{Fase 5: evaluar EMD para cada candidato}
+\ForEach{$P \in \mathrm{candidatos}$}{
+  $\delta_k(P) \leftarrow \texttt{emd\_efecto}(
+    \texttt{k\_partir}(P).\texttt{dist\_marginal}(),\; \mathrm{dist\_sub})$\;
+}
+\tcc{Fase 6: seleccionar k-MIP}
+$P^* \leftarrow \argmin_{P} \delta_k(P)$\;
+\KwRet{\texttt{Solution}(``KGeometric'', $\delta_k(P^*)$,
+  \texttt{fmt\_k\_particion}($P^*$), $t$)}\;
+\caption{\texttt{KGeometricSIA.aplicar\_estrategia}}
+\label{alg:kgeomip}
+\end{algorithm}
+
+% ════════════════════════════════════════════════════════════
+%  SECCIÓN 5 — ANÁLISIS DE COMPLEJIDAD
+% ════════════════════════════════════════════════════════════
+\section{Análisis de Complejidad}
+\label{sec:complejidad}
+
+\subsection{Complejidad temporal por fase}
+
+\begin{table}[ht]
+\centering
+\caption{Análisis de complejidad por fase de \texttt{KGeometricSIA.aplicar\_estrategia}}
+\label{tab:complejidad-fases}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Fase} & \textbf{Operación} & \textbf{$T(n)$} & \textbf{Notación} \\
+\midrule
+1 -- Preparar subsistema & condicionar + substraer & $\BigTheta{n \cdot 2^n}$ & $\Theta$ \\
+3 -- Tabla de costos BFS & calcular\_costos\_nivel $\times n$ & $\BigTheta{n \cdot 2^n}$ & $\Theta$ \\
+4 -- Generar candidatos  & Sort + heap $\times C$ & $\BigO{C \cdot n \log n}$ & $O$ \\
+5 -- Evaluar EMD $\times C$ & k\_partir + emd\_efecto & $\BigO{C \cdot n \cdot 2^n}$ & $O$ \\
+6 -- Seleccionar mínimo & min sobre $C$ claves & $\BigO{1}$ & $O$ \\
+\midrule
+\textbf{Total} & & $\bm{\BigTheta{n \cdot 2^n}}$ & $\bm{\Theta}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Demostración de la cota $\BigTheta{n \cdot 2^n}$}
+
+\begin{align}
+  T(n) &= T_3(n) + T_4(n) + T_5(n) \notag \\
+       &= \BigTheta{n \cdot 2^n} + \BigO{n \log n} + \BigO{C \cdot n \cdot 2^n}
+  \label{eq:complejidad-total}
+\end{align}
+
+Como $n \log n = o(n \cdot 2^n)$ y $C = 25$ es constante:
+\begin{equation}
+  \exists\, c_1, c_2 > 0: \quad
+  c_1 \cdot n \cdot 2^n \leq T(n) \leq c_2 \cdot n \cdot 2^n
+  \quad \Rightarrow \quad T(n) \in \BigTheta{n \cdot 2^n} \qquad \square
+\end{equation}
+
+\subsection{Tabla comparativa de complejidades}
+
+\begin{table}[ht]
+\centering
+\caption{Complejidades de los componentes de K-GeoMIP}
+\label{tab:complejidades}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Método} & \textbf{Tiempo} & \textbf{Espacio} & \textbf{Notas} \\
+\midrule
+\texttt{System.bipartir}        & $\BigO{n \cdot 2^d}$ & $\BigO{n \cdot 2^d}$ & $k=2$ fijo \\
+\texttt{System.k\_partir}       & $\BigO{n \cdot 2^d}$ & $\BigO{n \cdot 2^d}$ & $k \geq 2$ \\
+\texttt{stirling(n,k)}          & $\BigTheta{n \cdot k}$ & $\BigO{k}$ & DP 2 filas \\
+\texttt{particionar\_conjunto}  & $\BigTheta{n \cdot \Stir{n}{k}}$ & $\BigO{n}$ & RGS lazy \\
+\texttt{KGeometricSIA.aplicar}  & $\BigTheta{n \cdot 2^n}$ & $\BigO{n \cdot 2^n}$ & greedy $C=25$ \\
+Búsqueda exhaustiva             & $\BigO{\Stir{n}{k}^2 \cdot n \cdot 2^n}$ &
+  $\BigO{n \cdot 2^n}$ & inviable $n \geq 8$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Speedup respecto a búsqueda exhaustiva}
+
+\begin{equation}
+  \mathrm{Speedup}(n, k) = \frac{\Stir{n}{k}^2}{C}
+  \quad \xrightarrow{n=10,\; k=3} \quad
+  \frac{9\,330^2}{25} \approx \mathbf{3{,}47 \times 10^6}
+  \label{eq:speedup}
+\end{equation}
+
+% ════════════════════════════════════════════════════════════
+%  SECCIÓN 6 — DETALLES DE IMPLEMENTACIÓN
+% ════════════════════════════════════════════════════════════
+\section{Detalles de Implementación}
+\label{sec:implementacion}
+
+\subsection{Métodos principales de \texttt{KGeometricSIA}}
+
+\begin{table}[ht]
+\centering
+\caption{API pública y privada de \texttt{KGeometricSIA}}
+\label{tab:api-kgeomip}
+\begin{tabular}{@{}l p{5.5cm} l@{}}
+\toprule
+\textbf{Método} & \textbf{Descripción} & \textbf{Retorno} \\
+\midrule
+\texttt{aplicar\_estrategia(cond,alc,mec,tpm,k)} &
+  Orquesta el flujo completo & \texttt{Solution} \\
+\texttt{\_generar\_candidatos\_k(k)} &
+  Genera hasta $C=25$ candidatos & \texttt{list[Partición]} \\
+\texttt{\_greedy\_multiway(c, n, k, desc)} &
+  Algoritmo LPT & $k$ grupos \\
+\texttt{\_grupos\_a\_particion(grupos, A, M, k)} &
+  Convierte índices a NDArray & \texttt{list[tuple]} \\
+\texttt{\_particion\_valida(p)} &
+  Verifica partes no vacías & \texttt{bool} \\
+\texttt{\_particion\_a\_clave(p)} &
+  Clave hashable canónica & \texttt{frozenset} \\
+\texttt{\_dist\_particion(p)} &
+  Dist.\ marginal con caché (Opt 6) & \texttt{NDArray} \\
+\texttt{\_particion\_a\_grupos(p, A)} &
+  Asignación a índices locales & \texttt{list[list]} \\
+\texttt{\_refinar\_local(p, emd, dist)} &
+  Búsqueda local (Opt 7) & \texttt{tuple} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Optimizaciones NumPy}
+
+\subsubsection{Optimización 1 --- Dict a NDArray 2D}
+
+\begin{lstlisting}[style=python,
+  caption={Matriz de costos: dict vs NDArray},label=lst:opt1]
+# ANTES -- dict con claves tupla, O(n) hash por acceso
+tabla_transiciones = {}  # dict[tuple, list]
+
+# DESPUES -- ndarray 2D, O(1) por indice entero
+self._trans_matrix = np.zeros((1 << n_mec, n_fut), dtype=np.float32)
+self._trans_valid  = np.zeros(1 << n_mec, dtype=bool)
+
+@staticmethod
+def _estado_a_idx(estado) -> int:
+    # Little-endian: estado=[1,0,0] -> idx=1
+    return int("".join(map(str, reversed(list(estado)))), 2)
+\end{lstlisting}
+
+\subsubsection{Optimización 2 --- Vectorización de acumulación BFS}
+
+\begin{lstlisting}[style=python,
+  caption={Acumulación vectorizada en el BFS},label=lst:opt2]
+# ANTES -- dos bucles Python O(n_fut) cada uno
+for n in ncubos:
+    tabla[key][n] += tabla[tmp_key][n]
+tmp = [factor * x for x in tabla[key]]
+
+# DESPUES -- operaciones SIMD via NumPy, O(n_fut) en C
+self._trans_matrix[fin_idx] += self._trans_matrix[tmp_idx]
+self._trans_matrix[fin_idx] *= factor
+\end{lstlisting}
+
+\subsubsection{Optimización 3 --- Vectorización de identificación de particiones}
+
+\begin{lstlisting}[style=python,
+  caption={Identificación vectorizada de particiones óptimas},label=lst:opt3]
+# ANTES -- bucles Python
+presentes = [idx for idx, i in enumerate(estado)
+             if i == self.caminos[0][0][idx]]
+
+# DESPUES -- NumPy
+estado_arr = np.array(estado)
+ini_arr    = np.array(self.caminos[0][0])
+presentes  = np.where(estado_arr == ini_arr)[0].tolist()
+costos_min = np.minimum(actual, complementario)
+futuros    = np.where(actual <= complementario)[0].tolist()
+costo      = float(costos_min.sum())
+\end{lstlisting}
+
+El speedup estimado por las tres optimizaciones combinadas para $n=10$:
+\begin{equation}
+  S \approx \frac{t_{\mathrm{CPython}}}{t_{\mathrm{NumPy\;SIMD}}}
+  \approx \frac{n \cdot 2^n \cdot 200\,\mathrm{ns}}{n \cdot 2^n \cdot 5\,\mathrm{ns}}
+  \approx 40\times
+\end{equation}
+
+\subsection{Análisis de cuellos de botella y optimizaciones v1.1}
+\label{sec:cuellos-botella}
+
+Tras un perfilado del flujo completo de \texttt{KGeometricSIA} sobre los sistemas
+$N10A$ y $N15A$ se identificaron cuatro cuellos de botella, ordenados por impacto.
+La Tabla~\ref{tab:bottlenecks} los resume junto con la optimización aplicada a cada uno.
+
+\begin{table}[ht]
+\centering
+\caption{Cuellos de botella detectados y optimizaciones v1.1}
+\label{tab:bottlenecks}
+\begin{tabular}{@{}l p{4.6cm} l l@{}}
+\toprule
+\textbf{\#} & \textbf{Cuello de botella} & \textbf{Fase} & \textbf{Optimización} \\
+\midrule
+B1 & \texttt{\_estado\_a\_idx} basado en \texttt{str} ($\Theta(n\,2^n)$ llamadas) &
+  BFS (2--3) & Opt 4 \\
+B2 & \texttt{calcular\_costo}: listas Python por estado &
+  BFS (2--3) & Opt 5 \\
+B3 & Re-marginalización completa por candidato en Fase 5 &
+  Evaluación (5) & Opt 6 \\
+B4 & Candidatos greedy sin refinamiento (calidad de $\delta_k$) &
+  Selección (6) & Opt 7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Optimización 4 --- \texttt{\_estado\_a\_idx} con aritmética de bits}
+
+La conversión estado~$\to$~índice entero (convenio little-endian) se invoca
+$\BigTheta{n \cdot 2^n}$ veces durante la expansión BFS. La implementación previa
+(Listado~\ref{lst:opt1}) construía y parseaba una cadena por llamada, generando
+basura intermedia (\texttt{list}~$\to$~\texttt{map}~$\to$~\texttt{join}~$\to$~\texttt{int})
+en el bucle más caliente del algoritmo. Se reemplazó por aritmética de bits pura,
+con resultado idéntico bit a bit (el bit en la posición $i$ conserva su peso $2^i$).
+
+\begin{lstlisting}[style=python,
+  caption={Opt 4: estado a indice sin construir strings},label=lst:opt4]
+# ANTES (v1.0) -- construye y parsea un string por cada estado
+return int("".join(map(str, reversed(list(estado)))), 2)
+
+# DESPUES (v1.1) -- OR de bits, sin asignaciones intermedias
+idx = 0
+for posicion, bit in enumerate(estado):
+    if bit:
+        idx |= 1 << posicion   # activa el bit i con peso 2^i (little-endian)
+return idx
+\end{lstlisting}
+
+\subsubsection{Optimización 5 --- Vectorización de \texttt{calcular\_costo} con \texttt{\_flat\_matrix}}
+
+Por cada uno de los $2^n$ estados, \texttt{calcular\_costo} reconstruía dos listas
+Python \texttt{[flat[idx] for flat in \_flat\_data]} para formar el vector de diferencias
+$|X_{\mathrm{ini}} - X_{\mathrm{fin}}|$. Se precomputa una sola vez la matriz
+$\texttt{\_flat\_matrix} \in \mathbb{R}^{n_{\mathrm{fut}} \times 2^{n_{\mathrm{mec}}}}$
+(apilando los $n$-cubos aplanados) y se extraen las columnas por \emph{fancy indexing},
+eliminando $2 \cdot n_{\mathrm{fut}}$ accesos indexados en Python por estado.
+
+\begin{lstlisting}[style=python,
+  caption={Opt 5: diferencias por columnas vectorizadas},label=lst:opt5]
+# Precomputo (una vez, junto a _flat_data):
+self._flat_matrix = np.stack(self._flat_data)   # (n_fut, 2^n_mec)
+
+# ANTES (v1.0) -- dos comprensiones Python por estado
+diffs = np.abs(
+    np.array([flat[ini] for flat in self._flat_data])
+    - np.array([flat[fin] for flat in self._flat_data]))
+
+# DESPUES (v1.1) -- extraccion de columnas en C, sin listas temporales
+diffs = np.abs(self._flat_matrix[:, ini] - self._flat_matrix[:, fin])
+\end{lstlisting}
+
+Las optimizaciones 4 y 5 \textbf{no alteran el resultado}: se verificó la identidad
+bit a bit de \texttt{\_estado\_a\_idx} para todas las longitudes $n \in [1,12]$ y
+$200$ estados aleatorios por longitud. Su efecto es exclusivamente temporal sobre la
+fase dominante $\BigTheta{n \cdot 2^n}$, medido en la Tabla~\ref{tab:opt-tiempos}.
+
+\begin{table}[ht]
+\centering
+\caption{Efecto temporal de Opt 4--6 sobre la fase BFS (resultado idéntico)}
+\label{tab:opt-tiempos}
+\begin{tabular}{@{}l l r r r@{}}
+\toprule
+\textbf{Sistema} & \textbf{Fase} & \textbf{v1.0 (s)} & \textbf{v1.1 (s)} & \textbf{Mejora} \\
+\midrule
+$N15A$, $k=2$ & BFS completo & $5{,}55$ & $4{,}38$ & $-21\%$ \\
+$N15A$, $k=3$ & BFS + Fase 5 & $5{,}34$ & $4{,}29$ & $-20\%$ \\
+$N10A$, $k=2$ & BFS completo & $0{,}124$ & $0{,}112$ & $-10\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Optimización 6 --- Caché de marginales por (cubo, mecanismo)}
+
+En la Fase 5 cada candidato ejecutaba
+\texttt{k\_partir(P).distribucion\_marginal()}, reconstruyendo un \texttt{System}
+completo y re-marginalizando \emph{todos} los $n$-cubos. La distribución marginal de una
+k-partición, sin embargo, se factoriza por $n$-cubo: el valor del cubo $i$ depende
+\textbf{únicamente} de su índice y del conjunto-mecanismo $M_j$ de la parte que lo
+contiene en su alcance, y \emph{no} del resto de la partición:
+\begin{equation}
+  \mathrm{dist}[i] \;=\; 1 - P\!\Big(\texttt{marginalizar}\big(c_i,\; c_i.\mathrm{dims} \setminus M_j\big)\Big),
+  \qquad c_i.\mathrm{indice} \in A_j .
+\end{equation}
+Por ello se cachea el valor marginal por la clave $(c_i.\mathrm{indice},\, \mathrm{frozenset}(M_j))$,
+evitando repetir el costoso \texttt{np.mean} sobre $2^d$ celdas cuando el mismo par
+$(\text{cubo},\text{mecanismo})$ reaparece entre candidatos o entre movimientos de la
+búsqueda local. Se verificó que \texttt{\_dist\_particion} produce un resultado
+\textbf{idéntico} ($\max|\Delta| = 0{,}0$) al de \texttt{k\_partir().distribucion\_marginal()}
+sobre todos los candidatos de $N10A$ con $k \in \{3,4,5\}$.
+
+\subsection{Sistema de caché de subsistema (v0.9)}
+
+Clave de caché: $\mathrm{clave} = (\mathrm{condicion}, \mathrm{alcance}, \mathrm{mecanismo})$.
+
+\begin{center}
+\begin{tabular}{@{}l l@{}}
+\toprule
+\textbf{Escenario} & \textbf{Costo total Fases 1--3} \\
+\midrule
+Antes de v0.9 ($k \in \{2,3,4,5\}$, mismo subsistema) & $4 \cdot \BigTheta{n \cdot 2^n}$ \\
+Después de v0.9 (1 miss + 3 hits) & $1 \cdot \BigTheta{n \cdot 2^n}$ \\
+Ahorro absoluto & $3 \cdot \BigTheta{n \cdot 2^n}$ (\textbf{75\%}) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Suite de tests de validación}
+
+\begin{table}[ht]
+\centering
+\caption{Suite de 13 tests automatizados}
+\label{tab:tests}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Grupo} & \textbf{Tests} & \textbf{Postcondición} & \textbf{Dataset} \\
+\midrule
+A -- Corrección formal  & 2 &
+  $|\delta_2^{\mathrm{KGeo}} - \delta_2^{\mathrm{Geo}}| < 10^{-9}$;
+  \texttt{ValueError} para $k \notin [2,5]$ & N4A \\
+B -- Validez solución   & 6 &
+  pérdida $\geq 0$, distribuciones $\neq$ None, tiempo $\geq 0$ & N6A \\
+C -- Rendimiento        & 5 &
+  speedup greedy, sin regresión, \texttt{stirling} correcto & N6A \\
+\midrule
+\textbf{Total} & \textbf{13/13} & \textbf{passed en 7{,}13 s} & Python 3.12.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Dependencias externas}
+
+\begin{center}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Biblioteca} & \textbf{Versión} & \textbf{Uso} \\
+\midrule
+NumPy   & $\geq$ 2.0  & Arrays n-dimensionales, operaciones SIMD \\
+SciPy   & $\geq$ 1.10 & EMD (Wasserstein), cálculo científico \\
+pandas  & $\geq$ 2.0  & Lectura/escritura de Excel (.xlsx) \\
+pytest  & $\geq$ 9.0  & Framework de testing automatizado \\
+colorama & $\geq$ 0.4 & Salida en consola con colores (Windows) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ════════════════════════════════════════════════════════════
+%  SECCIÓN 7 — RESULTADOS EXPERIMENTALES
+% ════════════════════════════════════════════════════════════
+\section{Resultados Experimentales}
+\label{sec:resultados}
+
+\subsection{Entorno experimental}
+
+\begin{center}
+\begin{tabular}{@{}l l@{}}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} \\
+\midrule
+Procesador & Intel Core i5-12500H (12.ª Gen) \\
+RAM        & 32\,GB \\
+S.O.       & Windows 11 \\
+Python     & 3.12.5 \\
+NumPy      & 2.4.4 \\
+Referencia & \texttt{GeometricSIA} ($k=2$, búsqueda exacta, $\BigTheta{n \cdot 2^n}$) \\
+Evaluado   & \texttt{KGeometricSIA} ($k \in \{3,4,5\}$, greedy, $\BigTheta{n \cdot 2^n}$) \\
+Conjunto oficial & \texttt{DatosPruebas2026\_1.xlsx} (hojas 10A, 15B, 20A, 22A, 25A) \\
+Microbenchmark & Datasets incrementales N3A--N10A (escalabilidad temporal) \\
+Estado inicial & \texttt{"1"} seguido de $n-1$ ceros \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Los resultados de calidad ($\delta_k$) provienen del \textbf{conjunto oficial de pruebas}
+\texttt{DatosPruebas2026\_1.xlsx}, que evalúa $\approx 50$ subsistemas por sistema. Dicho
+archivo registró \emph{partición} y \emph{pérdida} pero \emph{no} tiempos de ejecución;
+por ello los tiempos de las Tablas~\ref{tab:tiempos} y~\ref{tab:ratio} provienen de un
+microbenchmark controlado sobre los datasets incrementales N3A--N10A (un subsistema completo
+por tamaño), medido en la misma plataforma.
+
+\subsection{Tabla 1 --- Tiempos de ejecución (segundos)}
+
+\begin{table}[ht]
+\centering
+\caption{Tiempo total de \texttt{aplicar\_estrategia} en segundos}
+\label{tab:tiempos}
+\begin{tabular}{@{}r r r r r@{}}
+\toprule
+$n$ & $k=2$ (GeoMIP) & $k=3$ & $k=4$ & $k=5$ \\
+\midrule
+3  & 0{,}0117 & 0{,}0086 & ---    & ---    \\
+4  & 0{,}0100 & 0{,}0119 & 0{,}0128 & ---    \\
+5  & 0{,}0173 & 0{,}0163 & 0{,}0164 & 0{,}0160 \\
+6  & 0{,}0391 & 0{,}0240 & 0{,}0197 & 0{,}0247 \\
+8  & 0{,}0537 & 0{,}0488 & 0{,}0372 & 0{,}0726 \\
+10 & 0{,}1682 & 0{,}1074 & 0{,}1313 & 0{,}1216 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Tabla 2 --- Ratio temporal $t_k / t_{\mathrm{geo}}$}
+
+\begin{table}[ht]
+\centering
+\caption{Ratio KGeometricSIA$(k)$ vs.\ GeometricSIA$(k=2)$}
+\label{tab:ratio}
+\begin{tabular}{@{}r r r r@{}}
+\toprule
+$n$ & $k=3\,/\,k=2$ & $k=4\,/\,k=2$ & $k=5\,/\,k=2$ \\
+\midrule
+3  & $0{,}74\times$ & --- & --- \\
+4  & $1{,}20\times$ & $1{,}28\times$ & --- \\
+5  & $0{,}94\times$ & $0{,}95\times$ & $0{,}92\times$ \\
+6  & $0{,}61\times$ & $0{,}50\times$ & $0{,}63\times$ \\
+8  & $0{,}91\times$ & $0{,}69\times$ & $1{,}35\times$ \\
+10 & $0{,}64\times$ & $0{,}78\times$ & $0{,}72\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Ratio máximo: $1{,}35\times$ ($n=8$, $k=5$) $\ll 3{,}0\times$ (umbral del test C2).
+
+\subsection{Tabla 3 --- Calidad de la solución ($\delta_k$ EMD) sobre el conjunto oficial}
+
+La Tabla~\ref{tab:calidad} reporta la pérdida EMD \textbf{promedio} de \texttt{KGeometricSIA}
+(columna \emph{Geometric} del archivo oficial) sobre los $\approx 50$ subsistemas de cada hoja
+de \texttt{DatosPruebas2026\_1.xlsx}. Cada celda es la media de $\delta_k$ sobre todos los
+subsistemas evaluados de ese sistema.
+
+\begin{table}[ht]
+\centering
+\caption{Pérdida EMD media $\overline{\delta_k}$ por sistema (conjunto oficial)}
+\label{tab:calidad}
+\begin{tabular}{@{}r r r r r r@{}}
+\toprule
+$n$ & \#subsist. & $\overline{\delta_2}$ & $\overline{\delta_3}$ & $\overline{\delta_4}$ & $\overline{\delta_5}$ \\
+\midrule
+10 (10A) & 49 & 0{,}0766 & 1{,}3583 & 1{,}3906 & 1{,}4449 \\
+15 (15B) & 50 & 0{,}0002 & 0{,}0166 & 0{,}0198 & 0{,}0213 \\
+20 (20A) & 50 & 0{,}0702 & 2{,}6482 & 2{,}6631 & --- \\
+22 (22A) & 50 & \multicolumn{4}{c}{sin completar (presupuesto temporal excedido)} \\
+25 (25A) & 50 & \multicolumn{4}{c}{sin completar (presupuesto temporal excedido)} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Observaciones:}
+\begin{itemize}
+  \item La pérdida media crece monótonamente con $k$
+    ($\overline{\delta_2} \leq \overline{\delta_3} \leq \overline{\delta_4} \leq \overline{\delta_5}$)
+    en todos los sistemas, coherente con que más particiones implican más pérdida de información.
+  \item El sistema $N15B$ presenta una pérdida casi nula en $k=2$
+    ($\overline{\delta_2} = 0{,}0002$): el subsistema es prácticamente reducible por bipartición.
+  \item Los sistemas $N22A$ y $N25A$ no se completaron por el costo $\BigTheta{n \cdot 2^n}$ de la
+    fase BFS ($2^{22}$ y $2^{25}$ estados); su evaluación es objetivo de las optimizaciones de la
+    sección~\ref{sec:cuellos-botella} y del trabajo futuro (Tabla~\ref{tab:mejoras}).
+\end{itemize}
+
+\subsubsection*{Comparativa con QNodes ($\overline{\delta_k}$)}
+
+El archivo oficial incluye además los resultados de la estrategia \texttt{QNodes} en los
+sistemas donde se completó. La Tabla~\ref{tab:calidad-qnodes} contrasta ambas medias.
+
+\begin{table}[ht]
+\centering
+\caption{$\overline{\delta_k}$: \texttt{QNodes} vs.\ \texttt{Geometric} (K-GeoMIP)}
+\label{tab:calidad-qnodes}
+\begin{tabular}{@{}l l r r r@{}}
+\toprule
+\textbf{Sistema} & \textbf{Estrategia} & $\overline{\delta_2}$ & $\overline{\delta_3}$ & $\overline{\delta_4}$ \\
+\midrule
+\multirow{2}{*}{$N10A$ (49)} & QNodes    & 0{,}0982 & \textbf{0{,}2778} & \textbf{0{,}4597} \\
+                             & Geometric & \textbf{0{,}0766} & 1{,}3583 & 1{,}3906 \\
+\midrule
+\multirow{2}{*}{$N15B$ (50)} & QNodes    & 0{,}0002 & \textbf{0{,}0016} & --- \\
+                             & Geometric & 0{,}0002 & 0{,}0166 & 0{,}0198 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent En $k=2$ la búsqueda exacta de \texttt{Geometric} iguala o mejora a \texttt{QNodes}
+(p.\,ej.\ $N10A$: $0{,}0766$ vs.\ $0{,}0982$). En $k \geq 3$, en cambio, \texttt{QNodes} obtiene
+particiones de menor pérdida media: la heurística greedy de K-GeoMIP explora solo $C=25$
+candidatos de un espacio de $S(n,k)^2$ particiones, mientras que QNodes aprovecha la estructura
+de nodos de corte. Esta brecha motivó directamente la \textbf{Optimización~7} (búsqueda local,
+sección~\ref{sec:busqueda-local}), que reduce $\delta_k$ hasta un $-14{,}7\%$ sin regresión;
+cerrar por completo la brecha es objeto de las mejoras propuestas (Beam Search, Branch \& Bound)
+en la Tabla~\ref{tab:mejoras}.
+
+\subsection{Tabla 4 --- Reducción del espacio de búsqueda}
+
+\begin{table}[ht]
+\centering
+\caption{Speedup de la fase de búsqueda: $\Stir{n}{k}^2 / C$}
+\label{tab:speedup}
+\begin{tabular}{@{}r r r r r r r@{}}
+\toprule
+$n$ & $\Stir{n}{3}$ & Sp $k=3$ & $\Stir{n}{4}$ & Sp $k=4$ & $\Stir{n}{5}$ & Sp $k=5$ \\
+\midrule
+5  & 25    & $8{,}3\times$      & 10    & $3{,}3\times$    & 1     & $0{,}3\times$ \\
+6  & 90    & $\mathbf{30\times}$ & 65    & $\mathbf{21\times}$ & 15    & $\mathbf{5\times}$ \\
+8  & 966   & $\mathbf{322\times}$ & 1701  & $\mathbf{567\times}$ & 1050  & $\mathbf{350\times}$ \\
+10 & 9330  & $\mathbf{3110\times}$ & 34105 & $\mathbf{11368\times}$ & 42525 & $\mathbf{14175\times}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Gráfica de escalabilidad temporal}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=12cm, height=7cm,
+  xlabel={Número de variables $n$},
+  ylabel={Tiempo de ejecución (s)},
+  xmin=2, xmax=11,
+  ymin=0, ymax=0.2,
+  legend pos=north west,
+  grid=major,
+  grid style={dashed, gray!30},
+  xtick={3,4,5,6,8,10},
+  title={Escalabilidad temporal de K-GeoMIP vs.\ GeoMIP},
+]
+\addplot[color=KGeoBlue, mark=*, thick]
+  coordinates {(3,0.0117)(4,0.0100)(5,0.0173)(6,0.0391)(8,0.0537)(10,0.1682)};
+\addlegendentry{$k=2$ (GeoMIP)}
+\addplot[color=KGeoGreen, mark=square*, thick]
+  coordinates {(3,0.0086)(4,0.0119)(5,0.0163)(6,0.0240)(8,0.0488)(10,0.1074)};
+\addlegendentry{$k=3$ (K-GeoMIP)}
+\addplot[color=KGeoOrange, mark=triangle*, thick]
+  coordinates {(4,0.0128)(5,0.0164)(6,0.0197)(8,0.0372)(10,0.1313)};
+\addlegendentry{$k=4$ (K-GeoMIP)}
+\addplot[color=violet, mark=diamond*, thick]
+  coordinates {(5,0.0160)(6,0.0247)(8,0.0726)(10,0.1216)};
+\addlegendentry{$k=5$ (K-GeoMIP)}
+\end{axis}
+\end{tikzpicture}
+\caption{Tiempos de ejecución para $n \in \{3,4,5,6,8,10\}$.
+  Todos los métodos exhiben crecimiento $\BigTheta{n \cdot 2^n}$.}
+\label{fig:tiempos}
+\end{figure}
+
+% ════════════════════════════════════════════════════════════
+%  SECCIÓN 8 — LIMITACIONES Y TRABAJO FUTURO
+% ════════════════════════════════════════════════════════════
+\section{Limitaciones y Trabajo Futuro}
+\label{sec:limitaciones}
+
+\subsection{Limitaciones de la heurística greedy}
+
+La heurística \textbf{no} garantiza encontrar la partición óptima global. Tres razones:
+\begin{enumerate}
+  \item \textbf{Cobertura limitada:} Para $n=10$, $k=3$: se evalúan 25 de
+    $\approx 87$M particiones posibles ($0{,}027\%$).
+  \item \textbf{Vector $\mathbf{c}$ como proxy del EMD:} $c_i$ captura diferencias
+    marginales de un nodo; el EMD real captura correlaciones conjuntas entre nodos.
+  \item \textbf{Garantía LPT $\neq$ garantía EMD:}
+    La cota (\ref{eq:lpt-garantia}) es sobre makespan, no sobre $\delta_k$.
+\end{enumerate}
+
+\subsection{Refinamiento por búsqueda local (Optimización 7, v1.1)}
+\label{sec:busqueda-local}
+
+Para mitigar la limitación~1 (cobertura limitada del espacio de búsqueda) se añadió
+una fase de \textbf{búsqueda local de primera-mejora} (\emph{hill climbing}) que pule la
+mejor k-partición hallada por el greedy. La solución se representa como una asignación de
+las $n$ variables a $k$ grupos; en cada pase se intenta mover cada variable a otro grupo,
+se reconstruye y valida la k-partición, y se evalúa su $\delta_k$. Se acepta el primer
+movimiento que reduce estrictamente $\delta_k$ y se reinicia el pase desde la nueva solución.
+
+\begin{lstlisting}[style=pseudocode,
+  caption={Refinamiento por busqueda local (first-improvement)},label=lst:opt7]
+refinar_local(particion, emd, dist):
+    si n > REFINAMIENTO_N_MAX: retornar (particion, emd, dist)   # gate de tamano
+    grupos <- asignacion_local(particion)
+    mientras hubo_mejora y evals < MAX_REFINAMIENTO_EVALS:
+        para cada grupo gi, cada variable v en gi, cada destino gj != gi:
+            mover v de gi a gj
+            cand <- grupos_a_particion(grupos)
+            si cand es valida:
+                d <- dist_particion(cand);  e <- emd_efecto(d, dist_orig)   # Opt 6
+                si e < mejor_emd - eps:  aceptar y reiniciar pase
+                si no: revertir movimiento
+            si no: revertir movimiento
+    retornar mejor (particion, emd, dist)
+\end{lstlisting}
+
+\paragraph{Garantía de no-regresión (mejora monótona).}
+La partición devuelta cumple $\delta_k^{\,\mathrm{v1.1}} \leq \delta_k^{\,\mathrm{v1.0}}$
+\emph{siempre}. La clave es que el caché inter-$k$ (warm-start) guarda la mejor partición
+\textbf{antes} del refinamiento; por tanto la generación de candidatos de cada $k$ es
+idéntica a la de v1.0 y el pool siempre contiene la solución base previa. Como solo se
+aceptan movimientos de mejora estricta, el refinamiento únicamente puede igualar o reducir
+la pérdida, nunca aumentarla.
+
+\paragraph{Acotación de costo.}
+El refinamiento se \textbf{desactiva} si $n > \texttt{REFINAMIENTO\_N\_MAX} = 16$, de modo
+que los sistemas grandes solo reciben el \emph{speedup} del BFS (Opt 4--5) y nunca trabajo
+adicional. Para $n \leq 16$ el número de evaluaciones está acotado por
+$\texttt{MAX\_REFINAMIENTO\_EVALS} = 40$, y cada evaluación reutiliza el caché de marginales
+(Opt 6): mover una sola variable solo recomputa los marginales de los grupos afectados.
+El costo extra $\BigO{40 \cdot n \cdot 2^d}$ queda dominado por la fase BFS $\BigTheta{n \cdot 2^n}$.
+
+\begin{table}[ht]
+\centering
+\caption{Reducción de pérdida $\delta_k$ por el refinamiento local (sin regresión)}
+\label{tab:opt7-perdida}
+\begin{tabular}{@{}l c r r r@{}}
+\toprule
+\textbf{Sistema} & \textbf{$k$} & \textbf{$\delta_k$ v1.0} & \textbf{$\delta_k$ v1.1} & \textbf{Mejora} \\
+\midrule
+$N10A$ & 3 & $4{,}34375$ & $3{,}70703$ & $-14{,}7\%$ \\
+$N10A$ & 4 & $4{,}37891$ & $4{,}10547$ & $-6{,}2\%$ \\
+$N10A$ & 5 & $4{,}41797$ & $4{,}41797$ & $0\%$ \\
+$N15A$ & 3 & $0{,}341422$ & $0{,}322286$ & $-5{,}6\%$ \\
+$N15A$ & 4 & $0{,}358117$ & $0{,}343485$ & $-4{,}1\%$ \\
+$N15A$ & 5 & $0{,}369636$ & $0{,}366972$ & $-0{,}7\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Comparativa de estrategias de búsqueda}
+
+\begin{table}[ht]
+\centering
+\caption{Alternativas de búsqueda para k-MIP}
+\label{tab:alternativas}
+\begin{tabular}{@{}l l l l@{}}
+\toprule
+\textbf{Estrategia} & \textbf{Garantía} & \textbf{Complejidad} & \textbf{$n$ viable} \\
+\midrule
+Exhaustiva        & Exacta (100\%) & $\BigO{\Stir{n}{k}^2 \cdot 2^n}$ & $n \leq 6$ \\
+Greedy $C=25$ (actual) & Ninguna formal & $\BigO{n \log n}$ & $n \leq 25$ \\
+Branch and Bound  & Exacta (100\%) & $\BigO{k^d}$ (con poda) & $n \leq 14$ práctico \\
+Beam Search $B=50$ & Cercana & $\BigO{B \cdot n \cdot k}$ & $n \leq 20$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La cota inferior del B\&B es:
+\begin{equation}
+  \mathrm{lb}(\mathrm{estado}) =
+  \mathrm{costo\_actual} + \frac{1}{k} \sum_{j \in \mathrm{pendientes}} c_j
+\end{equation}
+
+\subsection{Mejoras futuras propuestas}
+
+\begin{table}[ht]
+\centering
+\caption{Mejoras propuestas para v2.0}
+\label{tab:mejoras}
+\begin{tabular}{@{}l p{4cm} l l l@{}}
+\toprule
+\textbf{\#} & \textbf{Mejora} & \textbf{Calidad} & \textbf{Velocidad} & \textbf{Esfuerzo} \\
+\midrule
+17.1 & Búsqueda local first-improvement & Medio & Negativo leve & --- \textbf{(hecho v1.1)} \\
+17.2 & Branch \& Bound ($n \leq 12$) & Alto & Negativo & Alto \\
+17.3 & Beam Search ($W$ configurable) & Medio-Alto & Neutro & Medio \\
+17.4 & EMD exacta en Fase A & Medio & Neutro & Bajo \\
+17.5 & Caché persistente en disco & Ninguno & Muy alto & Bajo \\
+17.6 & Particiones no balanceadas & Medio & Neutro & Medio \\
+17.7 & Paralelismo Fase 5 ($\approx3\times$) & Ninguno & Alto & Bajo \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+La mejora 17.1 (búsqueda local) ya está implementada en v1.1; véase la
+sección~\ref{sec:busqueda-local}. \textbf{Prioridad recomendada para v2.0:}
+$17.5 \to 17.7 \to 17.4 \to 17.3$ (máximo beneficio con mínimo esfuerzo).
+
+% ════════════════════════════════════════════════════════════
+%  SECCIÓN 9 — USO DE IA GENERATIVA
+% ════════════════════════════════════════════════════════════
+\section{Uso de Inteligencia Artificial Generativa}
+
+Durante el desarrollo del proyecto K-GeoMIP se emplearon herramientas de IA generativa
+de forma transparente y complementaria al trabajo propio:
+
+\begin{itemize}
+  \item \textbf{Claude Code (Anthropic):} Asistencia en la estructuración del pseudocódigo
+    del algoritmo RGS y en la generación de la suite de tests automatizados.
+    Prompts típicos: ``\textit{¿Cómo implementar un generador RGS en Python?}'',
+    ``\textit{Genera tests parametrizados para validar equivalencia con GeometricSIA}''.
+
+  \item \textbf{GitHub Copilot:} Autocompletado de código repetitivo en operaciones
+    NumPy y generación de docstrings.
+
+  \item \textbf{Influencia en decisiones de diseño:} La idea de usar \texttt{frozenset}
+    como clave de caché para detectar duplicados surgió de una sugerencia de IA,
+    validada experimentalmente.
+\end{itemize}
+
+Todas las decisiones algorítmicas críticas (selección de LPT, demostración de equivalencia
+\texttt{k\_partir} $\equiv$ \texttt{bipartir}, análisis $\BigTheta{n \cdot 2^n}$) fueron
+verificadas independientemente por el autor.
+
+% ════════════════════════════════════════════════════════════
+%  APÉNDICES
+% ════════════════════════════════════════════════════════════
+\appendix
+
+\section{Demostraciones}
+\label{apx:demostraciones}
+
+\subsection{Corrección del algoritmo RGS}
+
+\begin{lemma}[Completitud sin duplicados]
+El algoritmo RGS genera exactamente todas las k-particiones distintas de
+$\{0, \ldots, n-1\}$, sin repeticiones.
+\end{lemma}
+
+\begin{proof}
+\textbf{Completitud:} Toda k-partición tiene exactamente una RGS canónica con $a[0] = 0$.
+El algoritmo recorre todas las RGS válidas por DFS $\Rightarrow$ completitud.
+
+\textbf{Sin duplicados:} Dos k-particiones son iguales ssi tienen la misma RGS canónica.
+El DFS genera cada RGS exactamente una vez $\Rightarrow$ sin duplicados. $\square$
+\end{proof}
+
+\subsection{Invariante de factorización de \texttt{k\_partir}}
+
+\begin{lemma}[Propiedad de factorización]
+Sea $P = \texttt{k\_partir}(\mathrm{particion})$. Entonces:
+\begin{equation}
+  \mathrm{dist\_marginal}(P) = \bigotimes_{i=1}^{k} p_{S_i}(A_i, M_i)
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Cada n-cubo $c$ en $A_i$ queda marginalizado sobre $\mathrm{dims} \setminus M_i$,
+equivalente a condicionar sobre solo las variables $M_i$.
+Por independencia condicional entre las $k$ partes, la distribución conjunta es el
+producto tensorial. $\square$
+\end{proof}
+
+\section{Resultados de Tests}
+\label{apx:tests}
+
+\begin{lstlisting}[style=pseudocode,
+  caption={Salida de la suite de 13 tests},label=lst:tests]
+platform win32 -- Python 3.12.5, pytest-9.0.3
+tests/test_kgeomip.py::test_k2_equivalencia_geometrica PASSED
+tests/test_kgeomip.py::test_k_invalido_lanza_valueerror[k=0] PASSED
+tests/test_kgeomip.py::test_k_invalido_lanza_valueerror[k=1] PASSED
+tests/test_kgeomip.py::test_k_invalido_lanza_valueerror[k=6] PASSED
+tests/test_kgeomip.py::test_solucion_atributos_validos[k=3] PASSED
+tests/test_kgeomip.py::test_solucion_atributos_validos[k=4] PASSED
+tests/test_kgeomip.py::test_solucion_atributos_validos[k=5] PASSED
+tests/test_kgeomip.py::test_distribucion_es_ndarray[k=3] PASSED
+tests/test_kgeomip.py::test_distribucion_es_ndarray[k=4] PASSED
+tests/test_kgeomip.py::test_distribucion_es_ndarray[k=5] PASSED
+tests/test_kgeomip.py::test_aislamiento_fase_busqueda PASSED
+tests/test_kgeomip.py::test_sin_regresion_rendimiento PASSED
+tests/test_kgeomip.py::test_stirling_correctness[k=3] PASSED
+========== 13 passed, 32 warnings in 7.13s ==========
+\end{lstlisting}
+
+\section{Registro de Cambios}
+\label{apx:changelog}
+
+\begin{longtable}{@{}l l p{8cm}@{}}
+\toprule
+\textbf{Versión} & \textbf{Fecha} & \textbf{Cambio} \\
+\midrule
+\endhead
+v1.1 & 2026-06-15 &
+  Revisión de cuellos de botella (sección~\ref{sec:cuellos-botella}):
+  Opt~4 (\texttt{\_estado\_a\_idx} con aritmética de bits) y
+  Opt~5 (\texttt{calcular\_costo} vectorizado con \texttt{\_flat\_matrix}) reducen
+  $-20\%$ la fase BFS sin alterar el resultado;
+  Opt~6 (caché de marginales por (cubo, mecanismo)) y
+  Opt~7 (búsqueda local first-improvement, sección~\ref{sec:busqueda-local})
+  reducen $\delta_k$ hasta $-14{,}7\%$ con garantía de no-regresión. \\[4pt]
+v1.0 & 2026-06-14 &
+  Optimización por chunks en \texttt{Manager.generar\_red}:
+  RAM pico $O(2^n \times n) \to O(65{,}536 \times n) \approx 4\,\text{MB}$ constante. \\[4pt]
+v0.9 & 2026-06-13 &
+  Caché de subsistema en \texttt{KGeometricSIA}: elimina recálculo de tabla BFS
+  entre valores de $k$ (ahorro 75\%). \\[4pt]
+v0.8 & 2026-06-13 &
+  Conteo adaptativo $n_{\mathrm{obj}} = \min(25, \Stir{n}{k})$ y
+  warm-start inter-$k$ para sistemas pequeños. \\[4pt]
+v0.7 & 2026-05-29 &
+  \texttt{letras\_a\_bits}, \texttt{run\_prueba}: utilidades de pruebas manuales. \\[4pt]
+v0.6 & 2026-05-29 &
+  Análisis experimental: benchmark completo con 4 tablas de datos reales. \\[4pt]
+v0.5 & 2026-05-29 & Suite de 13 tests automatizados: grupos A, B, C. \\[4pt]
+v0.4 & 2026-05-29 &
+  Integración en punto de entrada: variable \texttt{KGEOMIP\_K},
+  despacho a \texttt{KGeometricSIA}. \\[4pt]
+v0.3 & 2026-05-29 &
+  \texttt{KGeometricSIA}: heurística greedy LPT/round-robin/bloques. \\[4pt]
+v0.2 & 2026-05-29 &
+  \texttt{System.k\_partir()}, \texttt{stirling()}, \texttt{particionar\_conjunto()},
+  \texttt{k\_particiones()}, \texttt{fmt\_k\_particion()}. \\[4pt]
+v0.1 & --- & Estado inicial: GeoMIP base con soporte exclusivo $k=2$. \\
+\bottomrule
+\end{longtable}
+
+\section{Referencias y Bibliografía}
+\label{apx:referencias}
+
+\begin{enumerate}
+  \item Tononi, G. (2004). \textit{An information integration theory of consciousness}.
+    BMC Neuroscience, 5(1), 42.
+
+  \item Tononi, G., Boly, M., Massimini, M., \& Koch, C. (2016).
+    \textit{Integrated information theory: from consciousness to its physical substrate}.
+    Nature Reviews Neuroscience, 17(7), 450--461.
+
+  \item Graham, R.\,L. (1969). \textit{Bounds on multiprocessing timing anomalies}.
+    SIAM Journal on Applied Mathematics, 17(2), 416--429.
+    (Algoritmo LPT, garantía de aproximación $4/3$.)
+
+  \item Knuth, D.\,E. (1997). \textit{The Art of Computer Programming, Vol.\ 2}.
+    Addison-Wesley. (Números de Stirling, Sección 5.2.3.)
+
+  \item Rubner, Y., Tomasi, C., \& Guibas, L.\,J. (2000).
+    \textit{The Earth Mover's Distance as a metric for image retrieval}.
+    International Journal of Computer Vision, 40(2), 99--121.
+
+  \item Harris, C.\,R., et al.\ (2020). \textit{Array programming with NumPy}.
+    Nature, 585, 357--362.
+
+  \item Virtanen, P., et al.\ (2020).
+    \textit{SciPy 1.0: Fundamental algorithms for scientific computing in Python}.
+    Nature Methods, 17, 261--272.
+
+  \item Cormen, T.\,H., Leiserson, C.\,E., Rivest, R.\,L., \& Stein, C. (2009).
+    \textit{Introduction to Algorithms} (3rd ed.). MIT Press.
+
+  \item Mansour, T. (2012). \textit{Combinatorics of Set Partitions}.
+    CRC Press. (RGS, números de Stirling.)
+\end{enumerate}
+
+% ════════════════════════════════════════════════════════════
+%  SECCIÓN KQNodes (PENDIENTE)
+% ════════════════════════════════════════════════════════════
+\newpage
+\section*{Próxima Sección: KQNodes (pendiente)}
+\addcontentsline{toc}{section}{KQNodes (pendiente)}
+
+\begin{blueBox}
+\textbf{Nota:} La sección correspondiente a \textbf{KQNodes} --- extensión del algoritmo
+QNodes (Queyranne) a k-particiones --- se incorporará en la próxima versión de este
+documento.
+
+Estructura prevista:
+\begin{itemize}
+  \item Fundamentos teóricos: submodularidad y algoritmo de Queyranne para $k \geq 3$
+  \item Diseño algorítmico de \texttt{KQNodesSIA}
+  \item Análisis de complejidad comparado con K-GeoMIP
+  \item Resultados experimentales cruzados
+  \item Comparativa KGeoMIP vs.\ KQNodes
+\end{itemize}
+\end{blueBox}
+
+\end{document}

@@ -494,13 +494,91 @@ Suite de 13 tests que verifican:
 
 ---
 
+## 10. Interfaz Interactiva de Terminal
+
+La interfaz interactiva guía al usuario paso a paso para ingresar los parámetros,
+muestra qué CSV se está cargando, permite elegir la variante cuando hay varias,
+y genera una gráfica de rendimiento comparando k=2,3,4,5.
+
+### Instalación (primera vez)
+
+```powershell
+# 1. Ir a la carpeta de trabajo del método
+cd "K-GeoMIP\src\Method2_Dynamic_Programming_Reformulation"
+
+# 2. Crear y activar el entorno virtual
+python -m venv .venv
+.venv\Scripts\activate
+
+# 3. Instalar dependencias (colorama, matplotlib/manim, numpy, pandas, etc.)
+pip install -e .
+```
+
+> Si ya tienes el entorno con `uv sync`, salta directamente al paso de ejecución.
+
+### Verificar instalación
+
+```powershell
+# Desde Method2_Dynamic_Programming_Reformulation/
+.venv\Scripts\python.exe -c "from src.main import run_prueba; print('OK')"
+```
+
+### Ejecutar la interfaz interactiva
+
+```powershell
+# Desde Method2_Dynamic_Programming_Reformulation/
+.venv\Scripts\python.exe interactive.py
+```
+
+### Flujo de la interfaz
+
+Al ejecutar `interactive.py` el sistema:
+
+1. **Detecta los CSV disponibles** en `K-GeoMIP/data/samples/` y los muestra en tabla.
+2. **PASO 1 — Sistema y variante:** elige n de la lista o escribe el estado inicial en bits;
+   si hay múltiples variantes para el mismo n (ej. N15A.csv y N15B.csv), muestra un menú de selección.
+3. **PASO 2 — Alcance y Mecanismo:** ingresa las letras de los nodos (ej. `ABCDEFGHIJ`, `ACEGI`);
+   valida el rango y muestra la conversión letras→bits en tiempo real.
+4. **PASO 3 — k:** elige el número de particiones (2=exacta, 3/4/5=greedy).
+5. **PASO 4 — Confirmación:** revisa el resumen y confirma la ejecución.
+6. **Ejecución:** muestra `Cargando TPM: N10A.csv ...` e imprime el resultado con partición, δk y tiempo.
+7. **Gráfica (opcional):** ejecuta el algoritmo para k=2,3,4,5 y guarda una gráfica PNG en
+   `interactive_output/benchmark_N10A_ABCDEFGHIJ_ACEGI_k2a5_<timestamp>.png`.
+
+### Ejemplo de sesión
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║   K - G e o M I P   I n t e r a c t i v o                   ║
+║   K-Partición de Mínima Información (k-MIP)                  ║
+╚══════════════════════════════════════════════════════════════╝
+
+── CSV disponibles en disco ──────────────────────────────────────
+     n  Variante(s)     Filas TPM  Archivo(s)
+    ──  ──────────────  ─────────  ────────────────────
+     3  A  B                    8  N3A.csv, N3B.csv
+    10  A                    1024  N10A.csv
+    15  A  B               32,768  N15A.csv, N15B.csv
+
+── PASO 1 de 4 — Sistema, Estado Inicial y Variante ─────────────
+  › Opción [1]: 1
+  ...
+  ✓  Se cargará: N10A.csv
+  ✓  Estado inicial: 1000000000
+```
+
+---
+
 ## Resumen de comandos
 
 ```powershell
 # ── Carpeta de trabajo ───────────────────────────────────────────────────────
 cd "K-GeoMIP\src\Method2_Dynamic_Programming_Reformulation"
 
-# ── Prueba manual (recomendada para el Excel de la profesora) ────────────────
+# ── Interfaz interactiva (recomendada para pantallazos del manual) ────────────
+.venv\Scripts\python.exe interactive.py
+
+# ── Prueba manual directa (para una prueba puntual) ──────────────────────────
 .venv\Scripts\python.exe -c "
 from src.main import run_prueba
 run_prueba('ABCDEFGHIJ', 'ACEGI', k=2, estado_inicio='1000000000')

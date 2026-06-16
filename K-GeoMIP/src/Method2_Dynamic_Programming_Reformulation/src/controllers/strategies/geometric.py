@@ -75,10 +75,21 @@ class GeometricSIA(SIA):
         # Lógica: Convierte un estado binario (lista o NDArray de 0s/1s) al entero que lo representa
         #         en convenio little-endian: la posición 0 es el bit menos significativo (LSB).
         #         Permite indexar las filas de _trans_matrix en O(1) sin hash de tuplas Python.
-        # Sintaxis: `reversed(list(estado))` invierte el orden de los bits; `map(str, ...)` los
-        #           convierte a caracteres; `"".join(...)` forma la cadena binaria; `int(..., 2)`
-        #           la interpreta en base 2. Para estado=[1,0,0] → "001" → int=1.
-        return int("".join(map(str, reversed(list(estado)))), 2)
+        # OPTIMIZACIÓN (v1.0): se reemplazó la implementación anterior basada en strings
+        #         `int("".join(map(str, reversed(list(estado)))), 2)` —que construía y parseaba una
+        #         cadena por cada llamada— por aritmética de bits pura. Este método se invoca
+        #         Θ(n·2^n) veces durante la expansión BFS, por lo que eliminar la creación de
+        #         strings intermedios (list→map→join→int) reduce drásticamente la presión sobre el
+        #         recolector de basura y el tiempo de la fase dominante. El resultado es idéntico
+        #         bit a bit: el bit en la posición i conserva su peso 2^i (little-endian).
+        # Sintaxis: `enumerate(estado)` produce pares (posición, bit); el acumulador `idx` activa
+        #           el bit i con el OR a nivel de bits `idx |= 1 << i` solo cuando `bit` es verdadero
+        #           (1). `1 << i` es 2^i mediante desplazamiento — más rápido que la exponenciación.
+        idx = 0
+        for posicion, bit in enumerate(estado):
+            if bit:
+                idx |= 1 << posicion
+        return idx
 
     @profile(context={TYPE_TAG: GEOMETRIC_ANALYSIS_TAG})
     def aplicar_estrategia(
@@ -134,6 +145,19 @@ class GeometricSIA(SIA):
         #           a 1D sin copiar datos si es posible (retorna view si el array es contiguo).
         for idx, ncubo in enumerate(self.sia_subsistema.ncubos):
             self._flat_data.append(ncubo.data.ravel())
+
+        # Lógica: Apila los vectores aplanados en una matriz 2D (n_fut × 2^n_mec) para permitir la
+        #         extracción vectorizada de columnas en `calcular_costo`. OPTIMIZACIÓN (v1.0):
+        #         con `_flat_matrix[:, estado_idx]` obtenemos en una sola operación NumPy el vector
+        #         de probabilidades de TODOS los nodos futuros para un estado dado, eliminando la
+        #         construcción repetida de listas Python `[flat[idx] for flat in self._flat_data]`
+        #         dentro del bucle BFS (que se ejecuta una vez por cada uno de los 2^n estados).
+        # Sintaxis: `np.stack(lista_1D)` apila k arrays 1D de igual longitud en un array 2D de
+        #           shape (k, L); el guard `if self._flat_data` evita el error de stack sobre lista
+        #           vacía y produce una matriz vacía coherente para subsistemas degenerados.
+        self._flat_matrix = (
+            np.stack(self._flat_data) if self._flat_data else np.empty((0, 0))
+        )
 
         # Lógica: Crea el conjunto de todos los nodos (presentes + futuros) del subsistema; se usa
         #         en `nodes_complement` para calcular la diferencia de conjuntos sin bucles explícitos.
@@ -372,24 +396,27 @@ class GeometricSIA(SIA):
         # Sintaxis: `1 << distancia_hamming` = 2^dh con desplazamiento bit a bit — más rápido que **
         factor = 1.0 / (1 << distancia_hamming)
 
-        # Lógica: Índices enteros para indexar los vectores aplanados de probabilidades.
-        #         `_flat_data[j][idx]` = P(estado idx → siguiente) para el nodo futuro j.
-        #         La inversión del orden de bits alinea con el convenio little-endian de _flat_data.
-        # Sintaxis: slicing `[::-1]` invierte una lista Python; map+join+int parsean en base 2.
-        estado_ini_int = int("".join(map(str, estado_inicial[::-1])), 2)
-        # estado_fin_int = int("".join(map(str, estado_final[::-1])), 2)  # REDUNDANTE: produce
-        #   el mismo resultado que fin_idx (ya calculado con _estado_a_idx arriba), porque
-        #   [::-1] y reversed(list(...)) invierten el orden de bits de la misma forma.
+        # Lógica: Índices enteros para indexar las columnas de _flat_matrix (probabilidades).
+        #         `_flat_matrix[j, idx]` = P(estado idx → siguiente) para el nodo futuro j.
+        #         OPTIMIZACIÓN (v1.0): se reemplazó la conversión basada en string
+        #         `int("".join(map(str, estado_inicial[::-1])), 2)` por la llamada a `_estado_a_idx`
+        #         (aritmética de bits), que produce el mismo entero little-endian sin construir
+        #         cadenas intermedias en cada estado del BFS.
+        # Sintaxis: `_estado_a_idx(estado)` retorna el índice entero del estado; `fin_idx` ya fue
+        #           calculado arriba con el mismo método, por lo que `estado_fin_int = fin_idx`
+        #           evita recomputarlo (eran idénticos en la versión anterior basada en string).
+        estado_ini_int = self._estado_a_idx(estado_inicial)
         estado_fin_int = fin_idx
 
         # Lógica: Vectorización NumPy: calcula |X[ini] - X[fin]| para TODOS los nodos futuros
-        #         en una sola operación SIMD. Elimina el bucle Python original sobre ncubos.
-        #         Resultado: vector float64 de longitud n_fut con las diferencias absolutas.
-        # Sintaxis: `np.array([flat[idx] for flat in self._flat_data])` construye el vector de
-        #           probabilidades por comprensión; la resta y np.abs operan element-wise.
+        #         en una sola operación SIMD. OPTIMIZACIÓN (v1.0): se extraen las dos columnas
+        #         directamente de _flat_matrix con fancy indexing en vez de reconstruir dos listas
+        #         Python `[flat[idx] for flat in self._flat_data]` por cada estado — esto elimina
+        #         2·n_fut accesos indexados en Python y la creación de dos arrays temporales.
+        # Sintaxis: `_flat_matrix[:, idx]` selecciona la columna `idx` (vector de shape (n_fut,));
+        #           la resta y `np.abs` operan element-wise sobre los dos vectores columna.
         diffs = np.abs(
-            np.array([flat[estado_ini_int] for flat in self._flat_data])
-            - np.array([flat[estado_fin_int] for flat in self._flat_data])
+            self._flat_matrix[:, estado_ini_int] - self._flat_matrix[:, estado_fin_int]
         )
 
         # Lógica: Escribe los diffs base en la fila fin_idx de la matriz de transiciones.

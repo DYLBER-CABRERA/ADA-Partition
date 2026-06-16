@@ -1,6 +1,10 @@
 # Proyecto-20261
+## 📂 Recursos del proyecto
 
-Este repositorio contiene tres implementaciones principales para el análisis de MIP/IIT (Partición de Mínima Información en la Teoría de la Información Integrada):
+Los archivos relacionados con este proyecto se encuentran disponibles en Google Drive:
+
+🔗 https://drive.google.com/drive/folders/1nUU8fXdm4c_5NjxuX8JGqkCzsRxpMQ1d?usp=sharing
+
 
 1. **QNodes** - Framework base clásico para análisis MIP/IIT
 2. **GeoMIP** - Método 2 con Programación Dinámica
